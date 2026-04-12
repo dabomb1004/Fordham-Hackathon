@@ -55,9 +55,9 @@ function ValidationCard({ v }: { v: ValidationResult }) {
         </span>
       </div>
 
-      {v.certifications.length > 0 && (
+      {(v.certifications ?? []).length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {v.certifications.map((c) => (
+          {(v.certifications ?? []).map((c) => (
             <span key={c} className="flex items-center gap-1 text-xs bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-0.5 rounded-full">
               <CheckCircle2 className="w-3 h-3" />{c}
             </span>
@@ -65,9 +65,9 @@ function ValidationCard({ v }: { v: ValidationResult }) {
         </div>
       )}
 
-      {v.red_flags.length > 0 && (
+      {(v.red_flags ?? []).length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {v.red_flags.map((f) => (
+          {(v.red_flags ?? []).map((f) => (
             <span key={f} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 px-2 py-0.5 rounded-full">
               <AlertTriangle className="w-3 h-3" />{f}
             </span>
