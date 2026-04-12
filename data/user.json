@@ -1,0 +1,26 @@
+{
+  "id": "demo_user",
+  "name": "Alex Johnson",
+  "height": "5'11\"",
+  "weight": "175 lbs",
+  "age": 34,
+  "blood_type": "O+",
+  "medical_history": [
+    "Type 2 Diabetes (diagnosed 2021)",
+    "Hypertension",
+    "Seasonal allergies"
+  ],
+  "current_medications": [
+    "Metformin 500mg",
+    "Lisinopril 10mg"
+  ],
+  "insurance": {
+    "provider": "BlueCross BlueShield",
+    "plan": "PPO Gold",
+    "member_id": "BCB-4921-JX",
+    "group_number": "GRP-00234",
+    "copay": "$20",
+    "deductible": "$1,500"
+  },
+  "onboarded": true
+}
