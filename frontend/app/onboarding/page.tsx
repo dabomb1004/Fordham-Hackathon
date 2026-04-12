@@ -90,11 +90,11 @@ const EATING_GOALS = [
 ];
 
 const DECISION_FACTORS = [
-  { value: "taste",       label: "Taste",       emoji: "😋", desc: "I eat for the experience" },
-  { value: "health",      label: "Health",      emoji: "💚", desc: "Nutrition comes first"    },
-  { value: "price",       label: "Price",       emoji: "💰", desc: "Budget is key"            },
-  { value: "convenience", label: "Convenience", emoji: "⚡", desc: "Fast and easy wins"       },
-  { value: "safety",      label: "Safety",      emoji: "🛡️", desc: "Allergies matter most"    },
+  { value: "safety",      label: "Safety",        emoji: "🛡️", desc: "Flag health risks & recalls first"        },
+  { value: "health",      label: "Health",        emoji: "💚", desc: "Ingredients & nutrition matter most"       },
+  { value: "ethics",      label: "Ethics",        emoji: "⚖️", desc: "Labor practices & sustainability"          },
+  { value: "quality",     label: "Quality",       emoji: "⭐", desc: "Brand credibility & certifications"        },
+  { value: "price",       label: "Price",         emoji: "💰", desc: "Value for money"                           },
 ];
 
 // ─── BMI helper ──────────────────────────────────────────────────────────────
@@ -359,15 +359,14 @@ export default function Onboarding() {
                 <Utensils className="w-4 h-4 text-white" />
               </div>
               <div className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed" style={{ background: "#F5EFE6", color: "#3D2C1E" }}>
-                Hi {data.profile.name || "there"}! I'll help you avoid unsafe foods,
-                hidden allergens, and find better meals based on your preferences.
+                Hi {data.profile.name || "there"}! I&apos;ll cross-reference any product or brand against credible sources — flagging health risks, recalls, harmful ingredients, or ethical concerns based on your profile.
               </div>
             </div>
 
             <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>
-              Do you have any food allergies or dietary restrictions?
+              Do you have any known allergies?
             </h2>
-            <p className="text-sm mb-4" style={{ color: "#8C7466" }}>Select all that apply</p>
+            <p className="text-sm mb-4" style={{ color: "#8C7466" }}>Guardia will flag these in any product it checks — food, medications, cosmetics, and more</p>
 
             <div className="flex flex-wrap gap-2">
               {ALLERGY_OPTIONS.map((opt) => (
@@ -388,8 +387,8 @@ export default function Onboarding() {
         {/* ══ Step 2 — Full Dietary Profile ═══════════════════════════ */}
         {step === 2 && (
           <Card>
-            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>Your Dietary Profile</h2>
-            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>Fine-tune your food safety preferences</p>
+            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>Your Health Profile</h2>
+            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>Guardia uses this to flag risks across food, medications, supplements, and personal care products</p>
 
             <div className="flex flex-col gap-6">
               {/* Dietary type */}
@@ -619,10 +618,10 @@ export default function Onboarding() {
         {step === 4 && (
           <Card>
             <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>
-              What matters most when choosing food?
+              What matters most when verifying a product?
             </h2>
             <p className="text-sm mb-5" style={{ color: "#8C7466" }}>
-              This helps the AI prioritize its recommendations for you.
+              Guardia will lead with what you care about most.
             </p>
 
             <div className="flex flex-col gap-2">
