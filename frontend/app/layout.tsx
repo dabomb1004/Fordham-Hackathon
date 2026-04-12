@@ -6,8 +6,8 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Guardia — Product Safety Verification",
-  description: "Verify any food product, medication, or supplement against your personal health profile.",
+  title: "Guardia — Product & Brand Verification",
+  description: "Cross-reference any product or brand against credible sources. Food, clothing, medications, supplements — flagged or verified instantly.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
