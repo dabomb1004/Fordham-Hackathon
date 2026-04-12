@@ -105,7 +105,7 @@ export type DecisionFactor =
   | "";
 
 export interface FoodPriority {
-  decision_factor: DecisionFactor | DecisionFactor[];
+  decision_factor: string | string[];
 }
 
 // ─── Onboarding Status ───────────────────────────────────────────────────────
