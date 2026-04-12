@@ -46,36 +46,49 @@ interface DisplayMessage {
 
 // ── Validation card ─────────────────────────────────────────────────────────
 const STATUS_STYLES = {
-  pass: { icon: <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />, label: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
-  warn: { icon: <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />, label: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
-  fail: { icon: <ShieldAlert className="w-3.5 h-3.5 text-red-400 shrink-0" />, label: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+  pass: {
+    icon: <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: "#2A7A4A" }} />,
+    label: { color: "#2A7A4A" },
+    bg: { background: "#EAF5EE", border: "1px solid #c3e6d0" },
+  },
+  warn: {
+    icon: <AlertTriangle className="w-3.5 h-3.5 shrink-0" style={{ color: "#925F0A" }} />,
+    label: { color: "#925F0A" },
+    bg: { background: "#FEF6E4", border: "1px solid #f0d9a8" },
+  },
+  fail: {
+    icon: <ShieldAlert className="w-3.5 h-3.5 shrink-0" style={{ color: "#B83232" }} />,
+    label: { color: "#B83232" },
+    bg: { background: "#FDEEED", border: "1px solid #f0bcbc" },
+  },
 };
 
 function ValidationCard({ v }: { v: ValidationResult }) {
   const isPending = v.verdict === "PENDING_VALIDATION";
-  const verdictColor = isPending
-    ? "text-amber-400 border-amber-400/30 bg-amber-400/10"
+
+  const verdictStyle = isPending
+    ? { color: "#925F0A", background: "#FEF6E4", border: "1px solid #f0d9a8" }
     : v.verdict === "SAFE"
-    ? "text-green-400 border-green-400/30 bg-green-400/10"
+    ? { color: "#2A7A4A", background: "#EAF5EE", border: "1px solid #c3e6d0" }
     : v.verdict === "CAUTION"
-    ? "text-amber-400 border-amber-400/30 bg-amber-400/10"
-    : "text-red-400 border-red-400/30 bg-red-400/10";
+    ? { color: "#925F0A", background: "#FEF6E4", border: "1px solid #f0d9a8" }
+    : { color: "#B83232", background: "#FDEEED", border: "1px solid #f0bcbc" };
 
   return (
-    <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-4 text-sm">
+    <div className="mt-3 rounded-2xl p-4 flex flex-col gap-4 text-sm" style={{ background: "#F5EFE6", border: "1px solid #EAE2D6" }}>
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 font-semibold text-white">
-          <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+        <div className="flex items-center gap-2 font-semibold" style={{ color: "#3D2C1E" }}>
+          <ShieldAlert className="w-4 h-4 shrink-0" style={{ color: "#C17B3A" }} />
           <span>{v.brand_name}{v.product_name ? ` · ${v.product_name}` : ""}</span>
         </div>
         <div className="flex items-center gap-2">
           {v.trust_score !== null && (
-            <span className="text-xs text-white/40 font-mono">
+            <span className="text-xs font-mono" style={{ color: "#9a8878" }}>
               {v.trust_score}/100
             </span>
           )}
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${verdictColor}`}>
+          <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold" style={verdictStyle}>
             {v.verdict.replace(/_/g, " ")}
           </span>
         </div>
@@ -87,25 +100,26 @@ function ValidationCard({ v }: { v: ValidationResult }) {
           {v.factors.map((f) => {
             const style = STATUS_STYLES[f.status];
             return (
-              <div key={f.category} className={`rounded-xl border p-3 flex flex-col gap-1.5 ${style.bg}`}>
-                <div className={`flex items-center gap-1.5 text-xs font-semibold ${style.label}`}>
+              <div key={f.category} className="rounded-xl p-3 flex flex-col gap-1.5" style={style.bg}>
+                <div className="flex items-center gap-1.5 text-xs font-semibold" style={style.label}>
                   {style.icon}
                   {f.category}
                 </div>
                 <ul className="flex flex-col gap-0.5 pl-5">
                   {f.findings.map((item) => (
-                    <li key={item} className="text-xs text-white/60 list-disc">{item}</li>
+                    <li key={item} className="text-xs list-disc" style={{ color: "#5a4a3a" }}>{item}</li>
                   ))}
                 </ul>
                 {(f.sources ?? []).length > 0 && (
-                  <div className="flex flex-col gap-1 mt-1 pl-1 border-t border-white/5 pt-2">
+                  <div className="flex flex-col gap-1 mt-1 pl-1 pt-2" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
                     {f.sources.map((s) => (
                       <a
                         key={s.url}
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors truncate"
+                        className="flex items-center gap-1 text-xs truncate transition-colors hover:underline"
+                        style={{ color: "#C17B3A" }}
                       >
                         <ExternalLink className="w-3 h-3 shrink-0" />
                         <span className="truncate">{s.title}</span>
@@ -119,13 +133,13 @@ function ValidationCard({ v }: { v: ValidationResult }) {
         </div>
       )}
 
-      {/* Fallback chips if no factors (legacy / stub) */}
+      {/* Fallback chips if no factors */}
       {(v.factors ?? []).length === 0 && (
         <>
           {(v.certifications ?? []).length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {(v.certifications ?? []).map((c) => (
-                <span key={c} className="flex items-center gap-1 text-xs bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-0.5 rounded-full">
+                <span key={c} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "#EAF5EE", color: "#2A7A4A", border: "1px solid #c3e6d0" }}>
                   <CheckCircle2 className="w-3 h-3" />{c}
                 </span>
               ))}
@@ -134,7 +148,7 @@ function ValidationCard({ v }: { v: ValidationResult }) {
           {(v.red_flags ?? []).length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {(v.red_flags ?? []).map((f) => (
-                <span key={f} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 px-2 py-0.5 rounded-full">
+                <span key={f} className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full" style={{ background: "#FDEEED", color: "#B83232", border: "1px solid #f0bcbc" }}>
                   <AlertTriangle className="w-3 h-3" />{f}
                 </span>
               ))}
@@ -144,8 +158,8 @@ function ValidationCard({ v }: { v: ValidationResult }) {
       )}
 
       {/* Summary */}
-      <p className="text-white/40 text-xs leading-relaxed border-t border-white/5 pt-3">{v.reviews_summary}</p>
-      {v.stub && <p className="text-white/20 text-xs italic">Validation pending</p>}
+      <p className="text-xs leading-relaxed pt-3" style={{ color: "#9a8878", borderTop: "1px solid #EAE2D6" }}>{v.reviews_summary}</p>
+      {v.stub && <p className="text-xs italic" style={{ color: "#c0b0a0" }}>Validation pending</p>}
     </div>
   );
 }
@@ -245,7 +259,6 @@ export default function ChatPage() {
     }
   };
 
-  // Global drag-over detection for the landing drop zone
   const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setDragging(true); };
   const onDragLeave = () => setDragging(false);
   const onDrop = (e: React.DragEvent) => {
@@ -258,136 +271,146 @@ export default function ChatPage() {
   // ── Landing view ──────────────────────────────────────────────────────────
   if (!started) {
     return (
-      <div className="min-h-screen bg-black flex flex-col">
+      <div className="min-h-screen flex flex-col" style={{ background: "#FBF7F0" }}>
         <Navbar />
-      <main
-        className="flex-1 flex flex-col items-center justify-center px-4"
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-      >
-        {/* Logo */}
-        <div className="flex items-center gap-2 mb-12">
-          <Shield className="w-6 h-6 text-amber-400" />
-          <span className="text-white font-semibold text-lg tracking-tight">Guardia</span>
-        </div>
+        <main
+          className="flex-1 flex flex-col items-center justify-center px-4"
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+        >
+          {/* Logo */}
+          <div className="flex items-center gap-2 mb-10">
+            <Shield className="w-6 h-6" style={{ color: "#C17B3A" }} />
+            <span className="font-semibold text-lg tracking-tight" style={{ color: "#3D2C1E" }}>Guardia</span>
+          </div>
 
-        {/* Heading */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
-            Verify anything.
-          </h1>
-          <p className="text-white/40 text-base max-w-sm mx-auto">
-            Drop a photo or ask about any product or brand — food, clothing, medication, supplements. I cross-reference credible sources and flag what matters.
-          </p>
-        </div>
+          {/* Heading */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-2 tracking-tight" style={{ color: "#3D2C1E" }}>
+              Know what you&apos;re
+            </h1>
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight" style={{ color: "#C17B3A" }}>
+              buying into.
+            </h1>
+            <p className="text-base max-w-sm mx-auto" style={{ color: "#9a8878" }}>
+              Drop a photo or ask about any product — food, medication, supplements, cosmetics. Cross-referenced against FDA, consumer reports, and more.
+            </p>
+          </div>
 
-        {/* Main input card */}
-        <div className="w-full max-w-2xl">
-          <div className={`rounded-3xl border transition-all duration-200 ${
-            dragging
-              ? "border-amber-400/60 bg-amber-400/5 shadow-[0_0_40px_rgba(251,191,36,0.1)]"
-              : imageFile
-              ? "border-white/20 bg-white/5"
-              : "border-white/10 bg-[#1a1a1a]"
-          }`}>
-            {/* Image preview inside card */}
-            {imagePreview && (
-              <div className="px-5 pt-5">
-                <div className="relative inline-block">
-                  <img src={imagePreview} alt="preview" className="h-32 rounded-xl object-contain border border-white/10" />
-                  <button
-                    onClick={clearImage}
-                    className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 rounded-full p-1 transition"
-                  >
-                    <X className="w-3 h-3 text-white" />
-                  </button>
+          {/* Main input card */}
+          <div className="w-full max-w-2xl">
+            <div
+              className="rounded-3xl transition-all duration-200"
+              style={{
+                background: "#fff",
+                border: dragging ? "2px dashed #C17B3A" : "1px solid #EAE2D6",
+                boxShadow: dragging ? "0 0 30px rgba(193,123,58,0.12)" : "0 2px 12px rgba(61,44,30,0.06)",
+              }}
+            >
+              {/* Image preview */}
+              {imagePreview && (
+                <div className="px-5 pt-5">
+                  <div className="relative inline-block">
+                    <img src={imagePreview} alt="preview" className="h-32 rounded-xl object-contain" style={{ border: "1px solid #EAE2D6" }} />
+                    <button
+                      onClick={clearImage}
+                      className="absolute -top-2 -right-2 rounded-full p-1 transition"
+                      style={{ background: "#EAE2D6" }}
+                    >
+                      <X className="w-3 h-3" style={{ color: "#3D2C1E" }} />
+                    </button>
+                  </div>
                 </div>
+              )}
+
+              {/* Drop zone */}
+              {!imageFile && (
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className="mx-5 mt-5 rounded-2xl cursor-pointer transition flex flex-col items-center justify-center py-8 gap-2"
+                  style={{ border: "2px dashed #EAE2D6" }}
+                >
+                  <ImagePlus className="w-6 h-6" style={{ color: "#C17B3A" }} />
+                  <p className="text-sm" style={{ color: "#9a8878" }}>
+                    {dragging ? "Drop it!" : "Drop a product photo, or click to browse"}
+                  </p>
+                </div>
+              )}
+
+              {/* Text input row */}
+              <div className="flex items-end gap-3 px-5 py-4">
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="shrink-0 p-2 rounded-xl transition"
+                  style={{ color: "#9a8878" }}
+                  title="Upload image"
+                >
+                  <ImagePlus className="w-5 h-5" />
+                </button>
+
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+                  }}
+                  placeholder="Ask about a product or ingredient..."
+                  rows={1}
+                  className="flex-1 bg-transparent text-base resize-none focus:outline-none leading-relaxed"
+                  style={{ color: "#3D2C1E" }}
+                />
+
+                <button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() && !imageFile}
+                  className="shrink-0 px-4 py-2 rounded-xl font-semibold text-sm transition disabled:opacity-30 disabled:cursor-not-allowed"
+                  style={{ background: "#C17B3A", color: "#fff" }}
+                >
+                  Check now
+                </button>
               </div>
-            )}
+            </div>
 
-            {/* Drop zone (only when no image) */}
-            {!imageFile && (
-              <div
-                onClick={() => fileRef.current?.click()}
-                className="mx-5 mt-5 rounded-2xl border-2 border-dashed border-white/10 hover:border-white/20 cursor-pointer transition flex flex-col items-center justify-center py-8 gap-2"
-              >
-                <ImagePlus className="w-6 h-6 text-white/30" />
-                <p className="text-white/30 text-sm">
-                  {dragging ? "Drop it!" : "Drop a product photo, or click to browse"}
-                </p>
-              </div>
-            )}
+            {/* Hidden file input */}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageSelect(f); }}
+            />
 
-            {/* Text input row */}
-            <div className="flex items-end gap-3 px-5 py-4">
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="shrink-0 p-2 rounded-xl text-white/30 hover:text-white/60 hover:bg-white/5 transition"
-                title="Upload image"
-              >
-                <ImagePlus className="w-5 h-5" />
-              </button>
-
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-                }}
-                placeholder="Ask about a product or ingredient..."
-                rows={1}
-                className="flex-1 bg-transparent text-white placeholder-white/25 text-base resize-none focus:outline-none leading-relaxed"
-                style={{ maxHeight: 120, overflowY: "auto" }}
-              />
-
-              <button
-                onClick={() => handleSend()}
-                disabled={!input.trim() && !imageFile}
-                className="shrink-0 p-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-20 disabled:cursor-not-allowed text-black transition"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+            {/* Quick chips */}
+            <div className="flex flex-wrap justify-center gap-2 mt-5">
+              {CHIPS.map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => { setInput(chip); handleSend(chip); }}
+                  className="text-sm rounded-full px-4 py-1.5 transition"
+                  style={{ color: "#5a4a3a", background: "#F5EFE6", border: "1px solid #EAE2D6" }}
+                >
+                  {chip}
+                </button>
+              ))}
             </div>
           </div>
-
-          {/* Hidden file input */}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageSelect(f); }}
-          />
-
-          {/* Quick chips */}
-          <div className="flex flex-wrap justify-center gap-2 mt-5">
-            {CHIPS.map((chip) => (
-              <button
-                key={chip}
-                onClick={() => { setInput(chip); handleSend(chip); }}
-                className="text-sm text-white/40 border border-white/10 rounded-full px-4 py-1.5 hover:border-white/30 hover:text-white/70 transition"
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
-        </div>
-      </main>
+        </main>
       </div>
     );
   }
 
   // ── Chat view ─────────────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-black flex flex-col">
+    <main className="min-h-screen flex flex-col" style={{ background: "#FBF7F0" }}>
       <Navbar />
+
       {/* Sub-header */}
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
-        <Shield className="w-4 h-4 text-amber-400" />
-        <span className="text-white font-semibold text-sm">Guardia</span>
-        <span className="text-white/30 text-sm">— Product Safety</span>
+      <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: "1px solid #EAE2D6" }}>
+        <Shield className="w-4 h-4" style={{ color: "#C17B3A" }} />
+        <span className="font-semibold text-sm" style={{ color: "#3D2C1E" }}>Guardia</span>
+        <span className="text-sm" style={{ color: "#9a8878" }}>— Product Safety</span>
       </div>
 
       {/* Messages */}
@@ -399,21 +422,25 @@ export default function ChatPage() {
               <img
                 src={msg.imagePreview}
                 alt="uploaded"
-                className="max-h-52 rounded-2xl object-contain border border-white/10 mb-2"
+                className="max-h-52 rounded-2xl object-contain mb-2"
+                style={{ border: "1px solid #EAE2D6" }}
               />
             )}
 
             {/* Bubble */}
             {(msg.content && msg.content !== "(image)") && (
-              <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                msg.role === "user"
-                  ? "bg-white/10 text-white rounded-br-sm"
-                  : msg.askedQuestion
-                  ? "bg-[#1a1a1a] text-white border border-amber-400/20 rounded-bl-sm"
-                  : "bg-[#1a1a1a] text-white/90 rounded-bl-sm"
-              }`}>
+              <div
+                className="max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap"
+                style={
+                  msg.role === "user"
+                    ? { background: "#3D2C1E", color: "#FBF7F0", borderRadius: "18px 18px 4px 18px" }
+                    : msg.askedQuestion
+                    ? { background: "#fff", color: "#3D2C1E", border: "1px solid #C17B3A", borderRadius: "18px 18px 18px 4px" }
+                    : { background: "#fff", color: "#3D2C1E", border: "1px solid #EAE2D6", borderRadius: "18px 18px 18px 4px" }
+                }
+              >
                 {msg.askedQuestion && msg.role === "assistant" && (
-                  <p className="text-xs text-amber-400 mb-1.5 font-medium">Guardia asks</p>
+                  <p className="text-xs mb-1.5 font-semibold" style={{ color: "#C17B3A" }}>Guardia asks</p>
                 )}
                 {msg.content}
               </div>
@@ -430,8 +457,8 @@ export default function ChatPage() {
 
         {loading && (
           <div className="flex items-start">
-            <div className="bg-[#1a1a1a] rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-2 text-white/40 text-sm">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <div className="rounded-2xl px-4 py-3 flex items-center gap-2 text-sm" style={{ background: "#fff", border: "1px solid #EAE2D6", color: "#9a8878" }}>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: "#C17B3A" }} />
               Analyzing...
             </div>
           </div>
@@ -443,20 +470,21 @@ export default function ChatPage() {
       {imagePreview && (
         <div className="max-w-2xl w-full mx-auto px-5 pb-2">
           <div className="relative inline-block">
-            <img src={imagePreview} alt="preview" className="h-16 rounded-xl object-contain border border-white/10" />
-            <button onClick={clearImage} className="absolute -top-2 -right-2 bg-white/10 hover:bg-white/20 rounded-full p-1 transition">
-              <X className="w-3 h-3 text-white" />
+            <img src={imagePreview} alt="preview" className="h-16 rounded-xl object-contain" style={{ border: "1px solid #EAE2D6" }} />
+            <button onClick={clearImage} className="absolute -top-2 -right-2 rounded-full p-1 transition" style={{ background: "#EAE2D6" }}>
+              <X className="w-3 h-3" style={{ color: "#3D2C1E" }} />
             </button>
           </div>
         </div>
       )}
 
       {/* Input bar */}
-      <div className="border-t border-white/5 px-4 py-4 max-w-2xl w-full mx-auto">
-        <div className="flex items-end gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3">
+      <div className="px-4 py-4 max-w-2xl w-full mx-auto" style={{ borderTop: "1px solid #EAE2D6" }}>
+        <div className="flex items-end gap-3 rounded-2xl px-4 py-3" style={{ background: "#fff", border: "1px solid #EAE2D6" }}>
           <button
             onClick={() => fileRef.current?.click()}
-            className="shrink-0 p-1.5 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/5 transition"
+            className="shrink-0 p-1.5 rounded-lg transition"
+            style={{ color: "#9a8878" }}
             title="Upload image"
           >
             <ImagePlus className="w-4 h-4" />
@@ -479,19 +507,20 @@ export default function ChatPage() {
             placeholder="Ask a follow-up question..."
             rows={1}
             disabled={loading}
-            className="flex-1 bg-transparent text-white placeholder-white/25 text-sm resize-none focus:outline-none leading-relaxed disabled:opacity-50"
-            style={{ maxHeight: 120, overflowY: "auto" }}
+            className="flex-1 bg-transparent text-sm resize-none focus:outline-none leading-relaxed disabled:opacity-50"
+            style={{ color: "#3D2C1E" }}
           />
 
           <button
             onClick={() => handleSend()}
             disabled={loading || (!input.trim() && !imageFile)}
-            className="shrink-0 p-2 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:opacity-20 disabled:cursor-not-allowed text-black transition"
+            className="shrink-0 p-2 rounded-xl transition disabled:opacity-30 disabled:cursor-not-allowed"
+            style={{ background: "#C17B3A", color: "#fff" }}
           >
             <Send className="w-3.5 h-3.5" />
           </button>
         </div>
-        <p className="text-white/15 text-xs mt-2 text-center">Enter to send · Shift+Enter for newline</p>
+        <p className="text-xs mt-2 text-center" style={{ color: "#c0b0a0" }}>Enter to send · Shift+Enter for newline</p>
       </div>
     </main>
   );
