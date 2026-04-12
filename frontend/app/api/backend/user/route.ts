@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { getUser, saveUser } from "@/lib/storage";
 
-// GET /api/backend/user
 export async function GET() {
   try {
-    const user = getUser();
+    const user = await getUser();
     return NextResponse.json(user);
   } catch (err) {
     console.error("[GET /api/backend/user]", err);
@@ -12,11 +11,10 @@ export async function GET() {
   }
 }
 
-// PUT /api/backend/user
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
-    saveUser(data);
+    await saveUser(data);
     return NextResponse.json({ status: "ok" });
   } catch (err) {
     console.error("[PUT /api/backend/user]", err);

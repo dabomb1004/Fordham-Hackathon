@@ -1,42 +1,56 @@
-import fs from "fs";
-import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
-// ---------------------------------------------------------------------------
-// Supabase swap points — teammate replaces the three functions below when the
-// users table is ready. Everything else in this file stays the same.
-//
-// getUser()       → supabase.from('users').select().eq('id', userId).single()
-// saveUser()      → supabase.from('users').upsert(user)
-// saveUserMemory()→ supabase.from('users').upsert({ id, [key]: value })
-// ---------------------------------------------------------------------------
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const USER_FILE = path.join(DATA_DIR, "user.json");
+const USER_ID = "demo_user";
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+export async function getUser(): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", USER_ID)
+    .single();
+
+  if (error || !data) return {};
+
+  return {
+    id: data.id,
+    ...data.profile,
+    profile: data.profile,
+    food_safety: data.food_safety,
+    preferences: data.preferences,
+    priority: data.priority,
+    onboarding: data.onboarding,
+  };
 }
 
-// TODO(teammate): replace with Supabase select
-export function getUser(): Record<string, unknown> {
-  ensureDataDir();
-  if (!fs.existsSync(USER_FILE)) return {};
-  return JSON.parse(fs.readFileSync(USER_FILE, "utf-8"));
+export async function saveUser(user: Record<string, unknown>): Promise<void> {
+  await supabase.from("users").upsert({
+    id: USER_ID,
+    profile: user.profile ?? {},
+    food_safety: user.food_safety ?? {},
+    preferences: user.preferences ?? {},
+    priority: user.priority ?? {},
+    onboarding: user.onboarding ?? {},
+  });
 }
 
-// TODO(teammate): replace with Supabase upsert
-export function saveUser(user: Record<string, unknown>): void {
-  ensureDataDir();
-  fs.writeFileSync(USER_FILE, JSON.stringify(user, null, 2));
-}
+export async function saveUserMemory(key: string, value: unknown): Promise<void> {
+  const { data } = await supabase
+    .from("users")
+    .select("profile")
+    .eq("id", USER_ID)
+    .single();
 
-// Merges a single key-value fact into the user profile.
-// Called by the save_user_memory tool when the agent learns something mid-chat.
-// TODO(teammate): replace with Supabase column upsert
-export function saveUserMemory(key: string, value: unknown): void {
-  const user = getUser();
-  user[key] = value;
-  saveUser(user);
+  const profile = (data?.profile as Record<string, unknown>) ?? {};
+  profile[key] = value;
+
+  await supabase
+    .from("users")
+    .upsert({ id: USER_ID, profile });
 }
 
 // ---------------------------------------------------------------------------
@@ -60,5 +74,5 @@ export interface UserProfile {
     deductible?: string;
   };
   onboarded?: boolean;
-  [key: string]: unknown; // allow arbitrary memory keys the agent saves
+  [key: string]: unknown;
 }
