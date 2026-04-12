@@ -34,10 +34,6 @@ function combinedText(results: TavilyResult[]) {
   return results.map((r) => `${r.title} ${r.content}`).join(" ");
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 type Source = { title: string; url: string };
 
 function topSources(results: TavilyResult[], n = 3): Source[] {
@@ -48,55 +44,112 @@ function topSources(results: TavilyResult[], n = 3): Source[] {
 }
 
 // ---------------------------------------------------------------------------
-// Per-factor extractors
+// Brand-proximity check
+// Returns true if the text strongly associates the brand with the issue
+// (not just a generic industry article)
 // ---------------------------------------------------------------------------
+function mentionsBrandDirectly(text: string, brandName: string): boolean {
+  const brand = brandName.toLowerCase().split(" ")[0]; // e.g. "doctor's" from "Doctor's Best"
+  const window = 300; // characters around a brand mention to check for issue keywords
+  const lower = text.toLowerCase();
+  let idx = lower.indexOf(brand);
+  while (idx !== -1) {
+    const snippet = lower.slice(Math.max(0, idx - window), idx + window);
+    if (
+      /recall|warning|lawsuit|contamination|outbreak|violation|banned|fraud|complaint/i.test(snippet)
+    ) return true;
+    idx = lower.indexOf(brand, idx + 1);
+  }
+  return false;
+}
 
-function analyzeSafety(results: TavilyResult[], brandName: string): ValidationFactor {
-  const text = combinedText(results).toLowerCase();
+// ---------------------------------------------------------------------------
+// Factor: Food & Product Safety
+// Score 0-100 for this factor only
+// ---------------------------------------------------------------------------
+function analyzeSafety(results: TavilyResult[], brandName: string): ValidationFactor & { score: number } {
+  const text = combinedText(results);
+  const lower = text.toLowerCase();
   const issues: string[] = [];
   const positives: string[] = [];
 
-  if (/fda (recall|warning|alert|ban)/i.test(text)) issues.push("FDA recall or warning on record");
-  if (/class (i|ii|iii) recall/i.test(text)) issues.push("Official product recall issued");
-  if (/salmonella|listeria|e\.?\s*coli/i.test(text)) issues.push("Pathogen contamination reported");
-  if (/heavy metal|lead|arsenic|mercury|cadmium/i.test(text)) issues.push("Heavy metal contamination reported");
-  if (/food poison|illness outbreak/i.test(text)) issues.push("Illness outbreak linked to brand");
-  if (/health violation|health code/i.test(text)) issues.push("Health code violations on record");
-  if (/class action|lawsuit/i.test(text)) issues.push("Active or settled lawsuits found");
-  if (/misleading (claim|label)/i.test(text)) issues.push("Misleading labeling or claims reported");
+  // Only flag if the brand is directly implicated (not generic industry news)
+  const directlyImplicated = mentionsBrandDirectly(text, brandName);
 
-  if (issues.length === 0) positives.push("No major safety incidents found");
-  if (/clean record|no recall|safe product/i.test(text)) positives.push("Clean safety record");
+  if (directlyImplicated) {
+    if (/class (i|ii|iii) recall/i.test(lower)) issues.push("Official product recall on record");
+    else if (/fda (recall|alert)/i.test(lower)) issues.push("FDA recall or alert linked to brand");
+    if (/salmonella|listeria|e\.?\s*coli|hepatitis/i.test(lower)) issues.push("Pathogen contamination reported");
+    if (/heavy metal|lead|arsenic|mercury|cadmium/i.test(lower)) issues.push("Heavy metal contamination reported");
+    if (/illness outbreak|food poison/i.test(lower)) issues.push("Illness outbreak associated with brand");
+    if (/health violation|health code/i.test(lower)) issues.push("Health code violations on record");
+    if (/misleading (claim|label)/i.test(lower)) issues.push("Misleading labeling or claims reported");
+    if (/class action/i.test(lower)) issues.push("Class action lawsuit found");
+  }
+
+  if (issues.length === 0) {
+    positives.push("No direct safety incidents found for this brand");
+    if (/clean record|no recall|safe/i.test(lower)) positives.push("Reported clean safety record");
+  }
+
+  // Weighted score: start at 100, deduct per confirmed direct issue
+  let score = 100;
+  for (const issue of issues) {
+    if (/recall|contamination|outbreak/i.test(issue)) score -= 35;
+    else if (/lawsuit|violation/i.test(issue)) score -= 20;
+    else score -= 15;
+  }
+  score = Math.max(0, score);
 
   const status: ValidationFactor["status"] =
-    issues.length >= 2 ? "fail" : issues.length === 1 ? "warn" : "pass";
+    score >= 75 ? "pass" : score >= 45 ? "warn" : "fail";
 
   return {
     category: "Food & Product Safety",
     status,
     findings: [...issues, ...positives],
-    summary: results[0]?.content?.slice(0, 180) ?? "",
+    summary: results[0]?.content?.slice(0, 200) ?? "",
     sources: topSources(results),
+    score,
   };
 }
 
-function analyzeRegulatory(results: TavilyResult[]): ValidationFactor {
+// ---------------------------------------------------------------------------
+// Factor: Regulatory & Licensing
+// ---------------------------------------------------------------------------
+function analyzeRegulatory(results: TavilyResult[], brandName: string): ValidationFactor & { score: number } {
   const text = combinedText(results);
+  const lower = text.toLowerCase();
   const issues: string[] = [];
   const positives: string[] = [];
 
-  if (/fda approved/i.test(text)) positives.push("FDA approved");
+  const directlyImplicated = mentionsBrandDirectly(text, brandName);
+
+  // Positives — look broadly
+  if (/fda (approved|cleared)/i.test(text)) positives.push("FDA approved or cleared");
   if (/fda registered/i.test(text)) positives.push("FDA registered facility");
   if (/usda (approved|inspected)/i.test(text)) positives.push("USDA approved/inspected");
-  if (/ftc (warning|complaint|action)/i.test(text)) issues.push("FTC warning or complaint");
-  if (/banned (ingredient|substance)/i.test(text)) issues.push("Contains banned ingredient");
-  if (/undisclosed ingredient/i.test(text)) issues.push("Undisclosed ingredients reported");
-  if (/counterfeit|fake|fraud/i.test(text)) issues.push("Counterfeit or fraud reports found");
-  if (/warning letter/i.test(text)) issues.push("Regulatory warning letter issued");
-  if (/dea schedule|controlled substance/i.test(text)) issues.push("Contains controlled substance");
-  if (/gmp (certified|compliant)/i.test(text)) positives.push("GMP certified manufacturing");
+  if (/gmp (certified|compliant|manufacturing)/i.test(text)) positives.push("GMP certified manufacturing");
+  if (/iso (certified|9001|22000)/i.test(text)) positives.push("ISO certified");
 
-  if (issues.length === 0 && positives.length === 0) positives.push("No regulatory violations found");
+  // Negatives — only if brand is directly implicated
+  if (directlyImplicated) {
+    if (/banned (ingredient|substance)/i.test(lower)) issues.push("Contains banned ingredient");
+    if (/undisclosed ingredient/i.test(lower)) issues.push("Undisclosed ingredients reported");
+    if (/counterfeit|fake product/i.test(lower)) issues.push("Counterfeit product reports found");
+    if (/warning letter/i.test(lower)) issues.push("Regulatory warning letter issued to brand");
+    if (/ftc (warning|complaint|action)/i.test(lower)) issues.push("FTC warning or enforcement action");
+    if (/dea schedule|controlled substance/i.test(lower)) issues.push("Contains controlled substance");
+  }
+
+  if (issues.length === 0 && positives.length === 0) {
+    positives.push("No regulatory violations found");
+  }
+
+  let score = 70; // neutral baseline
+  score += positives.length * 10;
+  score -= issues.length * 25;
+  score = Math.max(0, Math.min(100, score));
 
   const status: ValidationFactor["status"] =
     issues.length >= 1 ? "fail" : positives.length > 0 ? "pass" : "warn";
@@ -105,12 +158,16 @@ function analyzeRegulatory(results: TavilyResult[]): ValidationFactor {
     category: "Regulatory & Licensing",
     status,
     findings: [...issues, ...positives],
-    summary: results[0]?.content?.slice(0, 180) ?? "",
+    summary: results[0]?.content?.slice(0, 200) ?? "",
     sources: topSources(results),
+    score,
   };
 }
 
-function analyzeCertifications(results: TavilyResult[]): ValidationFactor {
+// ---------------------------------------------------------------------------
+// Factor: Certifications
+// ---------------------------------------------------------------------------
+function analyzeCertifications(results: TavilyResult[]): ValidationFactor & { score: number } {
   const text = combinedText(results);
   const found: string[] = [];
 
@@ -128,6 +185,7 @@ function analyzeCertifications(results: TavilyResult[]): ValidationFactor {
     [/rainforest alliance/i, "Rainforest Alliance"],
     [/whole30 approved/i, "Whole30 Approved"],
     [/vegan (certified|society)/i, "Vegan Certified"],
+    [/certified (organic|natural)/i, "Certified Organic/Natural"],
   ];
 
   const seen = new Set<string>();
@@ -138,24 +196,31 @@ function analyzeCertifications(results: TavilyResult[]): ValidationFactor {
     }
   }
 
+  // Score: 60 base + 10 per cert, capped at 100
+  const score = Math.min(100, 60 + found.length * 10);
+
   return {
     category: "Certifications",
-    status: found.length > 0 ? "pass" : "warn",
+    status: found.length >= 2 ? "pass" : found.length === 1 ? "warn" : "warn",
     findings: found.length > 0 ? found : ["No third-party certifications found"],
     summary: found.length > 0
       ? `Verified certifications: ${found.join(", ")}.`
-      : "No recognized third-party certifications detected.",
+      : "No recognized third-party certifications detected in available sources.",
     sources: topSources(results),
+    score,
   };
 }
 
+// ---------------------------------------------------------------------------
+// Factor: Allergens & Ingredients
+// INFO ONLY — does not affect trust score
+// ---------------------------------------------------------------------------
 function analyzeAllergens(
   results: TavilyResult[],
   ingredientsOfConcern: string[]
-): ValidationFactor {
+): ValidationFactor & { score: number } {
   const text = combinedText(results).toLowerCase();
   const detected: string[] = [];
-  const safe: string[] = [];
 
   const commonAllergens: [RegExp, string][] = [
     [/\bpeanut/i, "Peanuts"],
@@ -173,68 +238,105 @@ function analyzeAllergens(
     if (pattern.test(text)) detected.push(`Contains ${label}`);
   }
 
-  // Also check explicitly passed ingredients of concern
+  // Flag ingredients the agent specifically flagged against the user's profile
   for (const ingredient of ingredientsOfConcern) {
-    const flagged = `${ingredient} flagged by user profile`;
-    if (!detected.includes(flagged)) detected.push(flagged);
+    const flagged = `${ingredient} — flagged against your profile`;
+    if (!detected.find((d) => d.toLowerCase().includes(ingredient.toLowerCase()))) {
+      detected.push(flagged);
+    }
   }
-
-  if (detected.length === 0) safe.push("No common allergens detected in search results");
 
   return {
     category: "Allergens & Ingredients",
+    // Always "warn" if allergens detected (informational), "pass" if none
+    // This factor does NOT contribute to trust score
     status: detected.length > 0 ? "warn" : "pass",
-    findings: detected.length > 0 ? detected : safe,
+    findings: detected.length > 0 ? detected : ["No common allergens detected"],
     summary: detected.length > 0
-      ? `Allergen signals found: ${detected.join(", ")}.`
+      ? "Allergen information is provided for your awareness. Cross-check with product label."
       : "No common allergen signals found in available data.",
     sources: topSources(results),
+    score: 100, // neutral — never drags down trust score
   };
 }
 
-function analyzeConsumerReputation(results: TavilyResult[]): ValidationFactor {
-  const text = combinedText(results).toLowerCase();
+// ---------------------------------------------------------------------------
+// Factor: Consumer Reputation
+// ---------------------------------------------------------------------------
+function analyzeConsumerReputation(results: TavilyResult[], brandName: string): ValidationFactor & { score: number } {
+  const text = combinedText(results);
+  const lower = text.toLowerCase();
   const positives: string[] = [];
   const negatives: string[] = [];
 
-  if (/top rated|best brand|editor.?s choice|highly recommended/i.test(text)) positives.push("Top-rated by reviewers");
-  if (/award.?winning|award winning/i.test(text)) positives.push("Award-winning product");
-  if (/trusted brand|reputable|well established/i.test(text)) positives.push("Established and trusted brand");
-  if (/complaint|negative review|bad review|do not buy/i.test(text)) negatives.push("Consumer complaints on record");
-  if (/bbb complaint|better business bureau/i.test(text)) negatives.push("BBB complaints found");
-  if (/scam|rip.?off/i.test(text)) negatives.push("Scam or rip-off reports found");
+  const directlyImplicated = mentionsBrandDirectly(text, brandName);
 
-  if (positives.length === 0 && negatives.length === 0) positives.push("No notable consumer reputation signals found");
+  if (/top rated|best brand|editor.?s choice|highly recommended|best seller/i.test(text)) positives.push("Top-rated by reviewers");
+  if (/award.?winning/i.test(text)) positives.push("Award-winning product or brand");
+  if (/trusted brand|reputable|well.?established|decades? of/i.test(text)) positives.push("Established and trusted brand");
+  if (/widely available|sold (at|in) major/i.test(text)) positives.push("Widely distributed and available");
+
+  if (directlyImplicated) {
+    if (/bbb complaint|better business bureau/i.test(lower)) negatives.push("BBB complaints on record");
+    if (/scam|rip.?off/i.test(lower)) negatives.push("Scam or fraud reports found");
+  }
+  // "complaints" is too broad — only flag if brand-direct
+  if (directlyImplicated && /class action|mass complaint/i.test(lower)) negatives.push("Mass consumer complaints found");
+
+  if (positives.length === 0 && negatives.length === 0) positives.push("No notable reputation signals found");
+
+  let score = 70;
+  score += positives.filter((p) => !p.includes("notable")).length * 8;
+  score -= negatives.length * 20;
+  score = Math.max(0, Math.min(100, score));
 
   return {
     category: "Consumer Reputation",
-    status: negatives.length >= 2 ? "fail" : negatives.length === 1 ? "warn" : "pass",
+    status: negatives.length >= 1 ? "warn" : positives.length > 1 ? "pass" : "pass",
     findings: [...negatives, ...positives],
-    summary: results[0]?.content?.slice(0, 180) ?? "",
+    summary: results[0]?.content?.slice(0, 200) ?? "",
     sources: topSources(results),
+    score,
   };
 }
 
 // ---------------------------------------------------------------------------
-// Scoring
+// Weighted trust score
+// Allergens factor is INFO ONLY and excluded from score
+// Weights: Safety 40%, Regulatory 30%, Certifications 20%, Reputation 10%
 // ---------------------------------------------------------------------------
+function computeTrustScore(factors: (ValidationFactor & { score: number })[]): number {
+  const weights: Record<string, number> = {
+    "Food & Product Safety": 0.40,
+    "Regulatory & Licensing": 0.30,
+    "Certifications": 0.20,
+    "Consumer Reputation": 0.10,
+    "Allergens & Ingredients": 0, // info only, excluded
+  };
 
-function computeTrustScore(factors: ValidationFactor[]): number {
-  let score = 70;
+  let total = 0;
+  let totalWeight = 0;
   for (const f of factors) {
-    if (f.status === "fail") score -= 18;
-    else if (f.status === "warn") score -= 6;
-    else score += 4;
+    const w = weights[f.category] ?? 0;
+    if (w === 0) continue;
+    total += f.score * w;
+    totalWeight += w;
   }
-  return Math.max(0, Math.min(100, Math.round(score)));
+
+  return totalWeight > 0 ? Math.round(total / totalWeight) : 70;
 }
 
-function verdictFromFactors(factors: ValidationFactor[], score: number): string {
-  const hasCriticalFail = factors.some(
-    (f) => f.status === "fail" && (f.category === "Food & Product Safety" || f.category === "Regulatory & Licensing")
-  );
-  if (hasCriticalFail) return "UNSAFE";
-  if (score >= 72) return "SAFE";
+function verdictFromScore(score: number, factors: (ValidationFactor & { score: number })[]): string {
+  // Only UNSAFE if a critical factor (Safety or Regulatory) is confirmed fail WITH a low score
+  const safetyFactor = factors.find((f) => f.category === "Food & Product Safety");
+  const regulatoryFactor = factors.find((f) => f.category === "Regulatory & Licensing");
+
+  const criticalFail =
+    (safetyFactor && safetyFactor.status === "fail" && safetyFactor.score < 40) ||
+    (regulatoryFactor && regulatoryFactor.status === "fail" && regulatoryFactor.score < 40);
+
+  if (criticalFail) return "UNSAFE";
+  if (score >= 75) return "SAFE";
   if (score >= 50) return "CAUTION";
   return "UNSAFE";
 }
@@ -242,7 +344,6 @@ function verdictFromFactors(factors: ValidationFactor[], score: number): string 
 // ---------------------------------------------------------------------------
 // Main export
 // ---------------------------------------------------------------------------
-
 export async function validateBrand(
   brandName: string,
   productName = "",
@@ -253,47 +354,38 @@ export async function validateBrand(
     const label = productName ? `${brandName} ${productName}` : brandName;
     const cat = productCategory ? ` ${productCategory}` : "";
 
-    // 4 targeted parallel searches
     const [safetyData, regulatoryData, certData, reputationData] = await Promise.all([
-      tavilySearch(`${label}${cat} FDA recall contamination safety warning illness outbreak`, 6),
-      tavilySearch(`${label}${cat} FDA approved registered banned ingredient regulatory violation warning letter`, 5),
-      tavilySearch(`${label}${cat} certified organic non-gmo NSF USP kosher halal gluten-free certification`, 5),
-      tavilySearch(`${label}${cat} consumer reviews complaints BBB lawsuit class action reputation`, 5),
+      tavilySearch(`"${brandName}" ${cat} recall contamination outbreak illness safety warning`, 6),
+      tavilySearch(`"${brandName}" FDA approved registered warning letter banned regulatory violation`, 5),
+      tavilySearch(`"${brandName}" certified organic non-gmo NSF USP kosher halal gluten-free`, 5),
+      tavilySearch(`"${brandName}" ${productName} reviews reputation complaints BBB trusted`, 5),
     ]);
 
-    const factors: ValidationFactor[] = [
-      analyzeSafety(safetyData.results, brandName),
-      analyzeRegulatory(regulatoryData.results),
-      analyzeCertifications(certData.results),
-      analyzeAllergens([...safetyData.results, ...certData.results], ingredientsOfConcern),
-      analyzeConsumerReputation(reputationData.results),
-    ];
+    const safetyFactor = analyzeSafety(safetyData.results, brandName);
+    const regulatoryFactor = analyzeRegulatory(regulatoryData.results, brandName);
+    const certFactor = analyzeCertifications(certData.results);
+    const allergenFactor = analyzeAllergens([...safetyData.results, ...certData.results], ingredientsOfConcern);
+    const reputationFactor = analyzeConsumerReputation(reputationData.results, brandName);
 
+    const factors = [safetyFactor, regulatoryFactor, certFactor, allergenFactor, reputationFactor];
     const trustScore = computeTrustScore(factors);
-    const verdict = verdictFromFactors(factors, trustScore);
+    const verdict = verdictFromScore(trustScore, factors);
 
     const redFlags = factors.flatMap((f) =>
-      f.status !== "pass" ? f.findings.filter((x) => !x.startsWith("No ") && !x.startsWith("Clean") && !x.startsWith("Verified")) : []
+      f.status === "fail" ? f.findings.filter((x) => !x.startsWith("No ") && !x.startsWith("Clean") && !x.startsWith("Verified")) : []
     );
-    const certifications = factors
-      .find((f) => f.category === "Certifications")
-      ?.findings.filter((x) => !x.startsWith("No ")) ?? [];
+    const certifications = certFactor.findings.filter((x) => !x.startsWith("No "));
 
     const summary =
       safetyData.answer ??
       safetyData.results[0]?.content?.slice(0, 250) ??
       `No major safety issues found for ${label}.`;
 
-    const allResults = [
-      ...safetyData.results,
-      ...regulatoryData.results,
-      ...certData.results,
-      ...reputationData.results,
-    ];
-    const sources = allResults
-      .filter((r) => r.score > 0.4)
-      .slice(0, 6)
-      .map((r) => ({ title: r.title, url: r.url }));
+    const allResults = [...safetyData.results, ...regulatoryData.results, ...certData.results, ...reputationData.results];
+    const sources = allResults.filter((r) => r.score > 0.4).slice(0, 6).map((r) => ({ title: r.title, url: r.url }));
+
+    // Strip internal score from factors before returning (not needed in UI)
+    const cleanFactors: ValidationFactor[] = factors.map(({ score: _score, ...rest }) => rest);
 
     return {
       brand_name: brandName,
@@ -303,7 +395,7 @@ export async function validateBrand(
       certifications,
       red_flags: redFlags,
       reviews_summary: summary,
-      factors,
+      factors: cleanFactors,
       sources,
     };
   } catch (err) {
