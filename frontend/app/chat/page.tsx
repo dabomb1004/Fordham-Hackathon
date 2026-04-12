@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Shield, Send, ImagePlus, X, Loader2, ShieldAlert, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
+import { Send, ImagePlus, X, Loader2, ShieldAlert, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 
@@ -279,12 +279,6 @@ export default function ChatPage() {
           onDragLeave={onDragLeave}
           onDrop={onDrop}
         >
-          {/* Logo */}
-          <div className="flex items-center gap-2 mb-10">
-            <Shield className="w-6 h-6" style={{ color: "#C17B3A" }} />
-            <span className="font-semibold text-lg tracking-tight" style={{ color: "#3D2C1E" }}>Guardia</span>
-          </div>
-
           {/* Heading */}
           <div className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold mb-2 tracking-tight" style={{ color: "#3D2C1E" }}>
@@ -405,13 +399,6 @@ export default function ChatPage() {
   return (
     <main className="min-h-screen flex flex-col" style={{ background: "#FBF7F0" }}>
       <Navbar />
-
-      {/* Sub-header */}
-      <div className="flex items-center gap-2 px-5 py-3" style={{ borderBottom: "1px solid #EAE2D6" }}>
-        <Shield className="w-4 h-4" style={{ color: "#C17B3A" }} />
-        <span className="font-semibold text-sm" style={{ color: "#3D2C1E" }}>Guardia</span>
-        <span className="text-sm" style={{ color: "#9a8878" }}>— Product Safety</span>
-      </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-8 flex flex-col gap-6 max-w-2xl w-full mx-auto">
