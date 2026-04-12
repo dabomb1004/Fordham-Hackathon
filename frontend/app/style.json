@@ -1,0 +1,46 @@
+{
+  "brand_colors": {
+    "espresso": {
+      "hex": "#3D2C1E",
+      "usage": ["nav", "headers", "dark background"]
+    },
+    "amber_spice": {
+      "hex": "#C17B3A",
+      "usage": ["primary buttons", "CTA"]
+    },
+    "cream": {
+      "hex": "#FBF7F0",
+      "usage": ["page background"]
+    },
+    "warm_sand": {
+      "hex": "#F5EFE6",
+      "usage": ["secondary background", "tags"]
+    },
+    "linen": {
+      "hex": "#EAE2D6",
+      "usage": ["borders", "dividers"]
+    }
+  },
+  "status_colors": {
+    "danger": {
+      "background": "#FDEDED",
+      "text": "#B83232",
+      "meaning": "allergen found"
+    },
+    "caution": {
+      "background": "#FEF6E4",
+      "text": "#925F0A",
+      "meaning": "cross-reaction risk"
+    },
+    "safe": {
+      "background": "#EAF5EE",
+      "text": "#2A7A4A",
+      "meaning": "no allergens"
+    },
+    "ai_insight": {
+      "background": "#F0EBF8",
+      "text": "#4A3575",
+      "meaning": "AI insight cards"
+    }
+  }
+}

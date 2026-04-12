@@ -14,6 +14,13 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { UserProfile } from "@/lib/types";
 
+// ─── Brand tokens (from style.json) ─────────────────────────────────────────
+// espresso   #3D2C1E  — nav, headers, dark text
+// amber_spice #C17B3A — primary buttons, CTA
+// cream      #FBF7F0  — page background
+// warm_sand  #F5EFE6  — card / tag background
+// linen      #EAE2D6  — borders, dividers
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ALLERGY_OPTIONS = [
@@ -22,13 +29,13 @@ const ALLERGY_OPTIONS = [
 ];
 
 const DIETARY_OPTIONS = [
-  { value: "None",         emoji: "🍽️" },
-  { value: "Vegan",        emoji: "🌱" },
-  { value: "Vegetarian",   emoji: "🥦" },
-  { value: "Halal",        emoji: "☪️"  },
-  { value: "Kosher",       emoji: "✡️"  },
-  { value: "Paleo",        emoji: "🥩" },
-  { value: "Keto",         emoji: "🧀" },
+  { value: "None",       emoji: "🍽️" },
+  { value: "Vegan",      emoji: "🌱" },
+  { value: "Vegetarian", emoji: "🥦" },
+  { value: "Halal",      emoji: "☪️"  },
+  { value: "Kosher",     emoji: "✡️"  },
+  { value: "Paleo",      emoji: "🥩" },
+  { value: "Keto",       emoji: "🧀" },
 ];
 
 const SENSITIVITY_OPTIONS = [
@@ -55,10 +62,10 @@ const CUISINE_OPTIONS = [
 ];
 
 const SPICE_LEVELS = [
-  { label: "Mild",       icon: "😌" },
-  { label: "Medium",     icon: "🌶️" },
-  { label: "Hot",        icon: "🔥" },
-  { label: "Extra Hot",  icon: "💀" },
+  { label: "Mild",      icon: "😌" },
+  { label: "Medium",    icon: "🌶️" },
+  { label: "Hot",       icon: "🔥" },
+  { label: "Extra Hot", icon: "💀" },
 ];
 
 const PRICE_RANGES = [
@@ -68,33 +75,31 @@ const PRICE_RANGES = [
 ];
 
 const EATING_GOALS = [
-  { value: "healthy",      label: "Healthy",      emoji: "🥗", desc: "Balanced nutrition"    },
-  { value: "comfort",      label: "Comfort Food",  emoji: "🍔", desc: "Feel-good meals"       },
-  { value: "high_protein", label: "High Protein",  emoji: "💪", desc: "Fuel for fitness"      },
-  { value: "weight_loss",  label: "Weight Loss",   emoji: "⚖️", desc: "Calorie conscious"     },
+  { value: "healthy",      label: "Healthy",     emoji: "🥗", desc: "Balanced nutrition"  },
+  { value: "comfort",      label: "Comfort Food", emoji: "🍔", desc: "Feel-good meals"     },
+  { value: "high_protein", label: "High Protein", emoji: "💪", desc: "Fuel for fitness"    },
+  { value: "weight_loss",  label: "Weight Loss",  emoji: "⚖️", desc: "Calorie conscious"   },
 ];
 
 const DECISION_FACTORS = [
-  { value: "taste",       label: "Taste",        emoji: "😋", desc: "I eat for the experience"  },
-  { value: "health",      label: "Health",        emoji: "💚", desc: "Nutrition comes first"     },
-  { value: "price",       label: "Price",         emoji: "💰", desc: "Budget is key"             },
-  { value: "convenience", label: "Convenience",   emoji: "⚡", desc: "Fast and easy wins"         },
-  { value: "safety",      label: "Safety",        emoji: "🛡️", desc: "Allergies matter most"     },
+  { value: "taste",       label: "Taste",       emoji: "😋", desc: "I eat for the experience" },
+  { value: "health",      label: "Health",      emoji: "💚", desc: "Nutrition comes first"    },
+  { value: "price",       label: "Price",       emoji: "💰", desc: "Budget is key"            },
+  { value: "convenience", label: "Convenience", emoji: "⚡", desc: "Fast and easy wins"       },
+  { value: "safety",      label: "Safety",      emoji: "🛡️", desc: "Allergies matter most"    },
 ];
 
-// ─── BMI Helper ──────────────────────────────────────────────────────────────
+// ─── BMI helper ──────────────────────────────────────────────────────────────
 
 function calcBMI(height: string, weight: string): number | null {
-  const ftIn  = height.match(/^(\d+)'(\d+)"/);
-  const ftIn2 = height.match(/^(\d+)\s*ft\s*(\d+)\s*in/i);
-  const cm    = height.match(/^(\d+)\s*cm/i);
-  const lbs   = weight.match(/^(\d+(?:\.\d+)?)\s*lbs?/i);
-  const kg    = weight.match(/^(\d+(?:\.\d+)?)\s*kg/i);
+  const ftIn = height.match(/^(\d+)'(\d+)"/);
+  const cm   = height.match(/^(\d+)\s*cm/i);
+  const lbs  = weight.match(/^(\d+(?:\.\d+)?)\s*lbs?/i);
+  const kg   = weight.match(/^(\d+(?:\.\d+)?)\s*kg/i);
 
   let h = 0, w = 0;
-  if (ftIn)       h = (parseInt(ftIn[1])  * 12 + parseInt(ftIn[2]))  * 0.0254;
-  else if (ftIn2) h = (parseInt(ftIn2[1]) * 12 + parseInt(ftIn2[2])) * 0.0254;
-  else if (cm)    h = parseInt(cm[1]) / 100;
+  if (ftIn) h = (parseInt(ftIn[1]) * 12 + parseInt(ftIn[2])) * 0.0254;
+  else if (cm) h = parseInt(cm[1]) / 100;
   if (lbs) w = parseFloat(lbs[1]) * 0.453592;
   else if (kg) w = parseFloat(kg[1]);
 
@@ -116,12 +121,11 @@ const DEFAULT_PROFILE: UserProfile = {
 
 export default function Onboarding() {
   const router = useRouter();
-  const [step, setStep]     = useState(0);
+  const [step, setStep]       = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
   const [data, setData]       = useState<UserProfile>(DEFAULT_PROFILE);
 
-  // Load existing profile (backwards-compatible with old flat shape)
   useEffect(() => {
     fetch("/api/backend/user")
       .then((r) => r.json())
@@ -135,10 +139,10 @@ export default function Onboarding() {
             weight: u.profile?.weight ?? u.weight  ?? "",
             bmi:    u.profile?.bmi    ?? null,
           },
-          food_safety: u.food_safety  ?? prev.food_safety,
-          preferences: u.preferences  ?? prev.preferences,
-          priority:    u.priority     ?? prev.priority,
-          onboarding:  u.onboarding   ?? prev.onboarding,
+          food_safety: u.food_safety ?? prev.food_safety,
+          preferences: u.preferences ?? prev.preferences,
+          priority:    u.priority    ?? prev.priority,
+          onboarding:  u.onboarding  ?? prev.onboarding,
         }));
       })
       .catch(() => {})
@@ -159,9 +163,7 @@ export default function Onboarding() {
         ...d,
         food_safety: {
           ...d.food_safety,
-          allergies: next.includes(val)
-            ? next.filter((x) => x !== val)
-            : [...next, val],
+          allergies: next.includes(val) ? next.filter((x) => x !== val) : [...next, val],
         },
       };
     });
@@ -173,9 +175,7 @@ export default function Onboarding() {
         ...d,
         food_safety: {
           ...d.food_safety,
-          sensitivities: arr.includes(val)
-            ? arr.filter((x) => x !== val)
-            : [...arr, val],
+          sensitivities: arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val],
         },
       };
     });
@@ -187,9 +187,7 @@ export default function Onboarding() {
         ...d,
         preferences: {
           ...d.preferences,
-          favorite_cuisines: arr.includes(val)
-            ? arr.filter((x) => x !== val)
-            : [...arr, val],
+          favorite_cuisines: arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val],
         },
       };
     });
@@ -223,12 +221,12 @@ export default function Onboarding() {
     }
   };
 
-  // ── Loading screen ────────────────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#FBF7F0" }}>
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: "#C17B3A" }} />
       </div>
     );
   }
@@ -238,16 +236,16 @@ export default function Onboarding() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <main className="min-h-screen bg-gray-950 py-12 px-4">
+    <main className="min-h-screen py-12 px-4" style={{ background: "#FBF7F0" }}>
       <div className="max-w-lg mx-auto flex flex-col gap-6">
 
-        {/* ── Branding + Progress ────────────────────────────────────── */}
+        {/* ── Branding + Progress ──────────────────────────────────── */}
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#3D2C1E" }}>
               <Utensils className="w-4 h-4 text-white" />
             </div>
-            <span className="text-white font-bold text-xl">FoodGuard AI</span>
+            <span className="font-bold text-xl" style={{ color: "#3D2C1E" }}>Guardia</span>
           </div>
 
           {step > 0 && (
@@ -255,13 +253,11 @@ export default function Onboarding() {
               {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
                 <div
                   key={i}
-                  className={cn(
-                    "flex-1 h-1.5 rounded-full transition-all duration-300",
-                    i < step ? "bg-orange-400" : "bg-gray-800"
-                  )}
+                  className="flex-1 h-1.5 rounded-full transition-all duration-300"
+                  style={{ background: i < step ? "#C17B3A" : "#EAE2D6" }}
                 />
               ))}
-              <span className="text-gray-500 text-xs ml-1 w-8 text-right">
+              <span className="text-xs ml-1 w-8 text-right" style={{ color: "#B5A497" }}>
                 {step}/{TOTAL_STEPS}
               </span>
             </div>
@@ -271,32 +267,38 @@ export default function Onboarding() {
         {/* ══ Step 0 — Profile Setup ══════════════════════════════════ */}
         {step === 0 && (
           <Card>
-            <h1 className="text-2xl font-bold text-white mb-1">Your Profile</h1>
-            <p className="text-gray-400 text-sm mb-5">
+            <h1 className="text-2xl font-bold mb-1" style={{ color: "#3D2C1E" }}>Your Profile</h1>
+            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>
               We use this to personalize your food safety recommendations.
             </p>
 
             {/* Avatar + Name */}
             <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg flex-shrink-0">
+              <div
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-md flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, #C17B3A, #3D2C1E)" }}
+              >
                 {data.profile.name
                   ? data.profile.name[0].toUpperCase()
                   : <User className="w-6 h-6" />}
               </div>
               <div className="flex-1">
-                <p className="text-gray-500 text-xs uppercase tracking-wide font-medium mb-1">
+                <p className="text-xs uppercase tracking-wide font-semibold mb-1" style={{ color: "#B5A497" }}>
                   Full Name
                 </p>
                 <input
                   value={data.profile.name}
                   onChange={(e) =>
-                    setData((d) => ({
-                      ...d,
-                      profile: { ...d.profile, name: e.target.value },
-                    }))
+                    setData((d) => ({ ...d, profile: { ...d.profile, name: e.target.value } }))
                   }
                   placeholder="Enter your name"
-                  className="w-full bg-transparent text-white text-lg font-semibold placeholder-gray-600 border-b border-gray-700 focus:border-orange-400 outline-none pb-1 transition-colors"
+                  className="w-full bg-transparent text-lg font-semibold outline-none pb-1 transition-colors"
+                  style={{
+                    color: "#3D2C1E",
+                    borderBottom: "2px solid #EAE2D6",
+                  }}
+                  onFocus={(e) => (e.currentTarget.style.borderBottomColor = "#C17B3A")}
+                  onBlur={(e) => (e.currentTarget.style.borderBottomColor = "#EAE2D6")}
                 />
               </div>
             </div>
@@ -304,73 +306,60 @@ export default function Onboarding() {
             {/* Stats grid */}
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Age">
-                <TextInput
+                <StyledInput
                   value={data.profile.age ? String(data.profile.age) : ""}
-                  onChange={(v) =>
-                    setData((d) => ({
-                      ...d,
-                      profile: { ...d.profile, age: parseInt(v) || 0 },
-                    }))
-                  }
+                  onChange={(v) => setData((d) => ({ ...d, profile: { ...d.profile, age: parseInt(v) || 0 } }))}
                   placeholder="28"
                 />
               </FormField>
-              <FormField label="Height">
-                <TextInput
+              <FormField label="Height (cm)">
+                <StyledInput
                   value={data.profile.height}
-                  onChange={(v) =>
-                    setData((d) => ({ ...d, profile: { ...d.profile, height: v } }))
-                  }
-                  placeholder='5&apos;9"'
+                  onChange={(v) => setData((d) => ({ ...d, profile: { ...d.profile, height: v } }))}
+                  placeholder="175"
                 />
               </FormField>
-              <FormField label="Weight">
-                <TextInput
+              <FormField label="Weight (kg)">
+                <StyledInput
                   value={data.profile.weight}
-                  onChange={(v) =>
-                    setData((d) => ({ ...d, profile: { ...d.profile, weight: v } }))
-                  }
-                  placeholder="165 lbs"
+                  onChange={(v) => setData((d) => ({ ...d, profile: { ...d.profile, weight: v } }))}
+                  placeholder="70"
                 />
               </FormField>
               <FormField label="BMI (auto)">
-                <div className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-sm text-center">
-                  {bmi !== null ? (
-                    <span className="text-orange-400 font-bold">{bmi}</span>
-                  ) : (
-                    <span className="text-gray-600">—</span>
-                  )}
+                <div
+                  className="rounded-lg px-4 py-2.5 text-sm text-center font-semibold"
+                  style={{ background: "#F5EFE6", border: "1px solid #EAE2D6", color: bmi ? "#C17B3A" : "#B5A497" }}
+                >
+                  {bmi ?? "—"}
                 </div>
               </FormField>
             </div>
 
-            <button
-              onClick={() => setStep(1)}
-              className="mt-5 w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-semibold rounded-xl py-3 transition"
-            >
+            <CtaButton onClick={() => setStep(1)} className="mt-5">
               Complete Your Profile <ChevronRight className="w-4 h-4" />
-            </button>
+            </CtaButton>
           </Card>
         )}
 
         {/* ══ Step 1 — Quick Allergy Check ════════════════════════════ */}
         {step === 1 && (
           <Card>
-            {/* Chat-style greeting bubble */}
+            {/* Chat bubble */}
             <div className="flex items-start gap-3 mb-5">
-              <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "#3D2C1E" }}>
                 <Utensils className="w-4 h-4 text-white" />
               </div>
-              <div className="bg-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-200 leading-relaxed">
+              <div className="rounded-2xl rounded-tl-sm px-4 py-3 text-sm leading-relaxed" style={{ background: "#F5EFE6", color: "#3D2C1E" }}>
                 Hi {data.profile.name || "there"}! I'll help you avoid unsafe foods,
                 hidden allergens, and find better meals based on your preferences.
               </div>
             </div>
 
-            <h2 className="text-white font-bold text-lg mb-1">
+            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>
               Do you have any food allergies or dietary restrictions?
             </h2>
-            <p className="text-gray-400 text-sm mb-4">Select all that apply</p>
+            <p className="text-sm mb-4" style={{ color: "#8C7466" }}>Select all that apply</p>
 
             <div className="flex flex-wrap gap-2">
               {ALLERGY_OPTIONS.map((opt) => (
@@ -391,10 +380,8 @@ export default function Onboarding() {
         {/* ══ Step 2 — Full Dietary Profile ═══════════════════════════ */}
         {step === 2 && (
           <Card>
-            <h2 className="text-white font-bold text-lg mb-1">Your Dietary Profile</h2>
-            <p className="text-gray-400 text-sm mb-5">
-              Fine-tune your food safety preferences
-            </p>
+            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>Your Dietary Profile</h2>
+            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>Fine-tune your food safety preferences</p>
 
             <div className="flex flex-col gap-6">
               {/* Dietary type */}
@@ -428,18 +415,19 @@ export default function Onboarding() {
                       <button
                         key={opt}
                         onClick={() => toggleSensitivity(opt)}
-                        className={cn(
-                          "flex items-center gap-3 p-3 rounded-xl border text-sm text-left transition",
-                          on
-                            ? "bg-orange-500/15 border-orange-400 text-white"
-                            : "bg-gray-800/60 border-gray-700 text-gray-300 hover:border-gray-600"
-                        )}
+                        className="flex items-center gap-3 p-3 rounded-xl text-sm text-left transition-all"
+                        style={{
+                          background: on ? "#FEF6E4" : "#F5EFE6",
+                          border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                          color: on ? "#925F0A" : "#3D2C1E",
+                        }}
                       >
                         <div
-                          className={cn(
-                            "w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition",
-                            on ? "bg-orange-500 border-orange-400" : "border-gray-600"
-                          )}
+                          className="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all"
+                          style={{
+                            background: on ? "#C17B3A" : "transparent",
+                            border: `1.5px solid ${on ? "#C17B3A" : "#B5A497"}`,
+                          }}
                         >
                           {on && <Check className="w-2.5 h-2.5 text-white" />}
                         </div>
@@ -458,10 +446,8 @@ export default function Onboarding() {
         {/* ══ Step 3 — Preferences ════════════════════════════════════ */}
         {step === 3 && (
           <Card>
-            <h2 className="text-white font-bold text-lg mb-1">Your Food Preferences</h2>
-            <p className="text-gray-400 text-sm mb-5">
-              Help us find restaurants and dishes you'll love
-            </p>
+            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>Your Food Preferences</h2>
+            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>Help us find restaurants and dishes you'll love</p>
 
             <div className="flex flex-col gap-6">
               {/* Cuisines */}
@@ -484,29 +470,32 @@ export default function Onboarding() {
               <div>
                 <SectionLabel>Spice Level</SectionLabel>
                 <div className="grid grid-cols-4 gap-2 mt-2">
-                  {SPICE_LEVELS.map(({ label, icon }) => (
-                    <button
-                      key={label}
-                      onClick={() =>
-                        setData((d) => ({
-                          ...d,
-                          preferences: {
-                            ...d.preferences,
-                            spice_level: label as UserProfile["preferences"]["spice_level"],
-                          },
-                        }))
-                      }
-                      className={cn(
-                        "flex flex-col items-center gap-1 py-3 rounded-xl border text-xs font-medium transition",
-                        data.preferences.spice_level === label
-                          ? "bg-orange-500/20 border-orange-400 text-white"
-                          : "bg-gray-800 border-gray-700 text-gray-400 hover:border-orange-700"
-                      )}
-                    >
-                      <span className="text-xl">{icon}</span>
-                      {label}
-                    </button>
-                  ))}
+                  {SPICE_LEVELS.map(({ label, icon }) => {
+                    const on = data.preferences.spice_level === label;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() =>
+                          setData((d) => ({
+                            ...d,
+                            preferences: {
+                              ...d.preferences,
+                              spice_level: label as UserProfile["preferences"]["spice_level"],
+                            },
+                          }))
+                        }
+                        className="flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all"
+                        style={{
+                          background: on ? "#FEF6E4" : "#F5EFE6",
+                          border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                          color: on ? "#925F0A" : "#8C7466",
+                        }}
+                      >
+                        <span className="text-xl">{icon}</span>
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -514,29 +503,32 @@ export default function Onboarding() {
               <div>
                 <SectionLabel>Price Range</SectionLabel>
                 <div className="grid grid-cols-3 gap-2 mt-2">
-                  {PRICE_RANGES.map(({ value, label }) => (
-                    <button
-                      key={value}
-                      onClick={() =>
-                        setData((d) => ({
-                          ...d,
-                          preferences: {
-                            ...d.preferences,
-                            price_range: value as UserProfile["preferences"]["price_range"],
-                          },
-                        }))
-                      }
-                      className={cn(
-                        "flex flex-col items-center gap-0.5 py-3 rounded-xl border text-sm font-medium transition",
-                        data.preferences.price_range === value
-                          ? "bg-orange-500/20 border-orange-400 text-white"
-                          : "bg-gray-800 border-gray-700 text-gray-400 hover:border-orange-700"
-                      )}
-                    >
-                      <span className="text-base font-bold">{value}</span>
-                      <span className="text-xs text-gray-500">{label}</span>
-                    </button>
-                  ))}
+                  {PRICE_RANGES.map(({ value, label }) => {
+                    const on = data.preferences.price_range === value;
+                    return (
+                      <button
+                        key={value}
+                        onClick={() =>
+                          setData((d) => ({
+                            ...d,
+                            preferences: {
+                              ...d.preferences,
+                              price_range: value as UserProfile["preferences"]["price_range"],
+                            },
+                          }))
+                        }
+                        className="flex flex-col items-center gap-0.5 py-3 rounded-xl text-sm font-medium transition-all"
+                        style={{
+                          background: on ? "#FEF6E4" : "#F5EFE6",
+                          border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                          color: on ? "#925F0A" : "#3D2C1E",
+                        }}
+                      >
+                        <span className="text-base font-bold">{value}</span>
+                        <span className="text-xs" style={{ color: on ? "#C17B3A" : "#8C7466" }}>{label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -544,32 +536,34 @@ export default function Onboarding() {
               <div>
                 <SectionLabel>Eating Goal</SectionLabel>
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                  {EATING_GOALS.map(({ value, label, emoji, desc }) => (
-                    <button
-                      key={value}
-                      onClick={() =>
-                        setData((d) => ({
-                          ...d,
-                          preferences: {
-                            ...d.preferences,
-                            eating_goal: value as UserProfile["preferences"]["eating_goal"],
-                          },
-                        }))
-                      }
-                      className={cn(
-                        "flex items-start gap-3 p-3 rounded-xl border text-left transition",
-                        data.preferences.eating_goal === value
-                          ? "bg-orange-500/20 border-orange-400"
-                          : "bg-gray-800 border-gray-700 hover:border-orange-700"
-                      )}
-                    >
-                      <span className="text-2xl">{emoji}</span>
-                      <div>
-                        <div className="text-white text-sm font-semibold">{label}</div>
-                        <div className="text-gray-500 text-xs mt-0.5">{desc}</div>
-                      </div>
-                    </button>
-                  ))}
+                  {EATING_GOALS.map(({ value, label, emoji, desc }) => {
+                    const on = data.preferences.eating_goal === value;
+                    return (
+                      <button
+                        key={value}
+                        onClick={() =>
+                          setData((d) => ({
+                            ...d,
+                            preferences: {
+                              ...d.preferences,
+                              eating_goal: value as UserProfile["preferences"]["eating_goal"],
+                            },
+                          }))
+                        }
+                        className="flex items-start gap-3 p-3 rounded-xl text-left transition-all"
+                        style={{
+                          background: on ? "#FEF6E4" : "#F5EFE6",
+                          border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                        }}
+                      >
+                        <span className="text-2xl">{emoji}</span>
+                        <div>
+                          <div className="text-sm font-semibold" style={{ color: on ? "#925F0A" : "#3D2C1E" }}>{label}</div>
+                          <div className="text-xs mt-0.5" style={{ color: "#8C7466" }}>{desc}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -581,16 +575,16 @@ export default function Onboarding() {
         {/* ══ Step 4 — Decision Priority ══════════════════════════════ */}
         {step === 4 && (
           <Card>
-            <h2 className="text-white font-bold text-lg mb-1">
+            <h2 className="text-lg font-bold mb-1" style={{ color: "#3D2C1E" }}>
               What matters most when choosing food?
             </h2>
-            <p className="text-gray-400 text-sm mb-5">
+            <p className="text-sm mb-5" style={{ color: "#8C7466" }}>
               This helps the AI prioritize its recommendations for you.
             </p>
 
             <div className="flex flex-col gap-2">
               {DECISION_FACTORS.map(({ value, label, emoji, desc }) => {
-                const selected = data.priority.decision_factor === value;
+                const on = data.priority.decision_factor === value;
                 return (
                   <button
                     key={value}
@@ -598,32 +592,29 @@ export default function Onboarding() {
                       setData((d) => ({
                         ...d,
                         priority: {
-                          decision_factor:
-                            value as UserProfile["priority"]["decision_factor"],
+                          decision_factor: value as UserProfile["priority"]["decision_factor"],
                         },
                       }))
                     }
-                    className={cn(
-                      "flex items-center gap-4 p-4 rounded-xl border text-left transition",
-                      selected
-                        ? "bg-orange-500/20 border-orange-400"
-                        : "bg-gray-800/60 border-gray-700 hover:border-orange-700"
-                    )}
+                    className="flex items-center gap-4 p-4 rounded-xl text-left transition-all"
+                    style={{
+                      background: on ? "#FEF6E4" : "#F5EFE6",
+                      border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                    }}
                   >
                     <span className="text-2xl w-8 text-center">{emoji}</span>
                     <div className="flex-1">
-                      <div className="text-white font-semibold text-sm">{label}</div>
-                      <div className="text-gray-400 text-xs mt-0.5">{desc}</div>
+                      <div className="font-semibold text-sm" style={{ color: on ? "#925F0A" : "#3D2C1E" }}>{label}</div>
+                      <div className="text-xs mt-0.5" style={{ color: "#8C7466" }}>{desc}</div>
                     </div>
                     <div
-                      className={cn(
-                        "w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition",
-                        selected
-                          ? "bg-orange-500 border-orange-400"
-                          : "border-gray-600"
-                      )}
+                      className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all"
+                      style={{
+                        background: on ? "#C17B3A" : "transparent",
+                        border: `2px solid ${on ? "#C17B3A" : "#B5A497"}`,
+                      }}
                     >
-                      {selected && <Check className="w-3 h-3 text-white" />}
+                      {on && <Check className="w-3 h-3 text-white" />}
                     </div>
                   </button>
                 );
@@ -631,16 +622,12 @@ export default function Onboarding() {
             </div>
 
             <div className="flex gap-3 mt-5">
-              <button
-                onClick={() => setStep(3)}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-800 text-gray-300 text-sm font-medium hover:border-gray-600 transition"
-              >
-                <ChevronLeft className="w-4 h-4" /> Back
-              </button>
+              <BackButton onClick={() => setStep(3)} />
               <button
                 onClick={handleSave}
                 disabled={saving || !data.priority.decision_factor}
-                className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-40 text-white font-semibold rounded-xl py-2.5 text-sm transition"
+                className="flex-1 flex items-center justify-center gap-2 font-semibold rounded-xl py-2.5 text-sm transition-all disabled:opacity-40"
+                style={{ background: "#C17B3A", color: "white" }}
               >
                 {saving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -661,7 +648,10 @@ export default function Onboarding() {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-gray-900 rounded-2xl border border-gray-800 p-6 flex flex-col">
+    <div
+      className="rounded-2xl p-6 flex flex-col shadow-sm"
+      style={{ background: "white", border: "1px solid #EAE2D6" }}
+    >
       {children}
     </div>
   );
@@ -670,13 +660,15 @@ function Card({ children }: { children: React.ReactNode }) {
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs text-gray-500 font-medium">{label}</label>
+      <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#B5A497" }}>
+        {label}
+      </label>
       {children}
     </div>
   );
 }
 
-function TextInput({
+function StyledInput({
   value,
   onChange,
   placeholder,
@@ -690,14 +682,21 @@ function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+      className="rounded-lg px-3 py-2.5 text-sm outline-none transition-all"
+      style={{
+        background: "#F5EFE6",
+        border: "1px solid #EAE2D6",
+        color: "#3D2C1E",
+      }}
+      onFocus={(e) => (e.currentTarget.style.borderColor = "#C17B3A")}
+      onBlur={(e) => (e.currentTarget.style.borderColor = "#EAE2D6")}
     />
   );
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">
+    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#B5A497" }}>
       {children}
     </p>
   );
@@ -715,14 +714,46 @@ function ToggleChip({
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "px-3 py-1.5 rounded-lg text-sm font-medium border transition",
-        selected
-          ? "bg-orange-500 border-orange-400 text-white"
-          : "bg-gray-800 border-gray-700 text-gray-300 hover:border-orange-700"
-      )}
+      className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all"
+      style={{
+        background: selected ? "#C17B3A" : "#F5EFE6",
+        border: `1px solid ${selected ? "#C17B3A" : "#EAE2D6"}`,
+        color: selected ? "white" : "#3D2C1E",
+      }}
     >
       {children}
+    </button>
+  );
+}
+
+function CtaButton({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn("w-full flex items-center justify-center gap-2 font-semibold rounded-xl py-3 text-sm transition-all", className)}
+      style={{ background: "#C17B3A", color: "white" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+      style={{ background: "#F5EFE6", border: "1px solid #EAE2D6", color: "#3D2C1E" }}
+    >
+      <ChevronLeft className="w-4 h-4" /> Back
     </button>
   );
 }
@@ -730,15 +761,11 @@ function ToggleChip({
 function NavRow({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   return (
     <div className="flex gap-3 mt-5">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-800 text-gray-300 text-sm font-medium hover:border-gray-600 transition"
-      >
-        <ChevronLeft className="w-4 h-4" /> Back
-      </button>
+      <BackButton onClick={onBack} />
       <button
         onClick={onNext}
-        className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-semibold rounded-xl py-2.5 text-sm transition"
+        className="flex-1 flex items-center justify-center gap-2 font-semibold rounded-xl py-2.5 text-sm transition-all"
+        style={{ background: "#C17B3A", color: "white" }}
       >
         Continue <ChevronRight className="w-4 h-4" />
       </button>

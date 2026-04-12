@@ -3,8 +3,8 @@
   "profile": {
     "name": "Alex Johnson",
     "age": 28,
-    "height": "5'9\"",
-    "weight": "165 lbs",
+    "height": "175",
+    "weight": "75",
     "bmi": 24.4
   },
   "food_safety": {
