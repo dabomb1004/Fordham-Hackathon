@@ -10,7 +10,6 @@ const FILTER_CHIPS = ["All", "Food & Beverage", "Clothing & Apparel", "Medicatio
 const STAT_CARDS = [
   { value: "24k+", label: "Products verified" },
   { value: "91%",  label: "Accuracy rate" },
-  { value: "<3s",  label: "Per check" },
 ];
 
 const RECENT_CHECKS = [
