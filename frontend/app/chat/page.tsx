@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Shield, Send, ImagePlus, X, Loader2, ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Shield, Send, ImagePlus, X, Loader2, ShieldAlert, AlertTriangle, CheckCircle2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 
@@ -15,6 +15,7 @@ interface ValidationFactor {
   status: "pass" | "warn" | "fail";
   findings: string[];
   summary: string;
+  sources: { title: string; url: string }[];
 }
 
 interface ValidationResult {
@@ -96,6 +97,22 @@ function ValidationCard({ v }: { v: ValidationResult }) {
                     <li key={item} className="text-xs text-white/60 list-disc">{item}</li>
                   ))}
                 </ul>
+                {(f.sources ?? []).length > 0 && (
+                  <div className="flex flex-col gap-1 mt-1 pl-1 border-t border-white/5 pt-2">
+                    {f.sources.map((s) => (
+                      <a
+                        key={s.url}
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-white/30 hover:text-white/60 transition-colors truncate"
+                      >
+                        <ExternalLink className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{s.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}

@@ -209,6 +209,7 @@ export interface ValidationFactor {
   status: "pass" | "warn" | "fail";
   findings: string[];         // bullet points shown to user
   summary: string;            // 1-2 sentence context
+  sources: { title: string; url: string }[];
 }
 
 export interface ValidationResult {

@@ -35,6 +35,19 @@ function combinedText(results: TavilyResult[]) {
 }
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+type Source = { title: string; url: string };
+
+function topSources(results: TavilyResult[], n = 3): Source[] {
+  return results
+    .filter((r) => r.score > 0.3)
+    .slice(0, n)
+    .map((r) => ({ title: r.title, url: r.url }));
+}
+
+// ---------------------------------------------------------------------------
 // Per-factor extractors
 // ---------------------------------------------------------------------------
 
@@ -63,6 +76,7 @@ function analyzeSafety(results: TavilyResult[], brandName: string): ValidationFa
     status,
     findings: [...issues, ...positives],
     summary: results[0]?.content?.slice(0, 180) ?? "",
+    sources: topSources(results),
   };
 }
 
@@ -92,6 +106,7 @@ function analyzeRegulatory(results: TavilyResult[]): ValidationFactor {
     status,
     findings: [...issues, ...positives],
     summary: results[0]?.content?.slice(0, 180) ?? "",
+    sources: topSources(results),
   };
 }
 
@@ -130,6 +145,7 @@ function analyzeCertifications(results: TavilyResult[]): ValidationFactor {
     summary: found.length > 0
       ? `Verified certifications: ${found.join(", ")}.`
       : "No recognized third-party certifications detected.",
+    sources: topSources(results),
   };
 }
 
@@ -172,6 +188,7 @@ function analyzeAllergens(
     summary: detected.length > 0
       ? `Allergen signals found: ${detected.join(", ")}.`
       : "No common allergen signals found in available data.",
+    sources: topSources(results),
   };
 }
 
@@ -194,6 +211,7 @@ function analyzeConsumerReputation(results: TavilyResult[]): ValidationFactor {
     status: negatives.length >= 2 ? "fail" : negatives.length === 1 ? "warn" : "pass",
     findings: [...negatives, ...positives],
     summary: results[0]?.content?.slice(0, 180) ?? "",
+    sources: topSources(results),
   };
 }
 
