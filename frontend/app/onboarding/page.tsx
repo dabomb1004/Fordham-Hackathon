@@ -38,12 +38,20 @@ const DIETARY_OPTIONS = [
   { value: "Keto",       emoji: "🧀" },
 ];
 
-const SENSITIVITY_OPTIONS = [
+const MEDICAL_CONDITIONS = [
   "Lactose Intolerance",
+  "Gluten Sensitivity",
+  "Celiac Disease",
+  "IBS",
+  "Diabetes",
+];
+
+const DIETARY_NEEDS = [
   "Low Sodium",
   "Low Sugar",
   "Low Fat",
-  "Gluten Sensitivity",
+  "Low Carb",
+  "High Protein",
 ];
 
 const CUISINE_OPTIONS = [
@@ -405,11 +413,12 @@ export default function Onboarding() {
                 </div>
               </div>
 
-              {/* Sensitivities */}
+              {/* Medical Conditions */}
               <div>
-                <SectionLabel>Additional Sensitivities</SectionLabel>
-                <div className="flex flex-col gap-2 mt-2">
-                  {SENSITIVITY_OPTIONS.map((opt) => {
+                <SectionLabel>Medical Conditions</SectionLabel>
+                <p className="text-xs mt-1 mb-2" style={{ color: "#A89080" }}>Select conditions you have been diagnosed with</p>
+                <div className="flex flex-col gap-2">
+                  {MEDICAL_CONDITIONS.map((opt) => {
                     const on = data.food_safety.sensitivities.includes(opt);
                     return (
                       <button
@@ -420,6 +429,40 @@ export default function Onboarding() {
                           background: on ? "#FEF6E4" : "#F5EFE6",
                           border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
                           color: on ? "#925F0A" : "#3D2C1E",
+                        }}
+                      >
+                        <div
+                          className="w-4 h-4 rounded flex-shrink-0 flex items-center justify-center transition-all"
+                          style={{
+                            background: on ? "#C17B3A" : "transparent",
+                            border: `1.5px solid ${on ? "#C17B3A" : "#B5A497"}`,
+                          }}
+                        >
+                          {on && <Check className="w-2.5 h-2.5 text-white" />}
+                        </div>
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Dietary Needs */}
+              <div>
+                <SectionLabel>Dietary Needs</SectionLabel>
+                <p className="text-xs mt-1 mb-2" style={{ color: "#A89080" }}>Select doctor-recommended or personal dietary restrictions</p>
+                <div className="flex flex-col gap-2">
+                  {DIETARY_NEEDS.map((opt) => {
+                    const on = data.food_safety.sensitivities.includes(opt);
+                    return (
+                      <button
+                        key={opt}
+                        onClick={() => toggleSensitivity(opt)}
+                        className="flex items-center gap-3 p-3 rounded-xl text-sm text-left transition-all"
+                        style={{
+                          background: on ? "#F5EFE6" : "#F5EFE6",
+                          border: `1px solid ${on ? "#C17B3A" : "#EAE2D6"}`,
+                          color: on ? "#3D2C1E" : "#3D2C1E",
                         }}
                       >
                         <div

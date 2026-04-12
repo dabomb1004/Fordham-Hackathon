@@ -16,7 +16,8 @@ interface UserData {
 
 const ALLERGY_OPTIONS = ["Nuts", "Dairy", "Gluten", "Seafood", "Shellfish", "Soy", "Eggs", "Wheat"];
 const DIETARY_OPTIONS = ["None", "Vegan", "Vegetarian", "Halal", "Kosher", "Paleo", "Keto"];
-const SENSITIVITY_OPTIONS = ["Lactose Intolerance", "Low Sodium", "Low Sugar", "Low Fat", "Gluten Sensitivity"];
+const MEDICAL_CONDITIONS = ["Lactose Intolerance", "Gluten Sensitivity", "Celiac Disease", "IBS", "Diabetes"];
+const DIETARY_NEEDS = ["Low Sodium", "Low Sugar", "Low Fat", "Low Carb", "High Protein"];
 const CUISINE_OPTIONS = ["Chinese", "Italian", "Japanese", "Mexican", "Indian", "Thai", "Mediterranean", "American", "Korean", "French", "Greek", "Vietnamese"];
 const SPICE_LEVELS = ["Mild", "Medium", "Hot", "Extra Hot"];
 const PRICE_RANGES = ["$", "$$", "$$$"];
@@ -331,9 +332,19 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#A89080" }}>Sensitivities</p>
+                        <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#A89080" }}>Medical Conditions</p>
+                        <p className="text-xs mb-2" style={{ color: "#A89080" }}>Select conditions you have been diagnosed with</p>
                         <div className="flex flex-wrap gap-2">
-                          {SENSITIVITY_OPTIONS.map((s) => (
+                          {MEDICAL_CONDITIONS.map((s) => (
+                            <Chip key={s} selected={(draft.food_safety?.sensitivities ?? []).includes(s)} onClick={() => toggleSensitivity(s)}>{s}</Chip>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "#A89080" }}>Dietary Needs</p>
+                        <p className="text-xs mb-2" style={{ color: "#A89080" }}>Select dietary preferences or doctor-recommended restrictions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {DIETARY_NEEDS.map((s) => (
                             <Chip key={s} selected={(draft.food_safety?.sensitivities ?? []).includes(s)} onClick={() => toggleSensitivity(s)}>{s}</Chip>
                           ))}
                         </div>
@@ -359,18 +370,22 @@ export default function ProfilePage() {
                           </div>
                         </div>
                       )}
-                      {sensitivities.length > 0 && (
+                      {sensitivities.filter(s => MEDICAL_CONDITIONS.includes(s)).length > 0 && (
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#A89080" }}>Sensitivities</p>
+                          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#A89080" }}>Medical Conditions</p>
                           <div className="flex flex-wrap gap-2">
-                            {sensitivities.map((s) => (
-                              <div key={s} className="px-4 py-3 rounded-xl flex flex-col gap-1 min-w-[100px]" style={{ background: "#FEF6E4", border: "1px solid #EAE2D6" }}>
-                                <span className="text-sm font-semibold" style={{ color: "#3D2C1E" }}>{s}</span>
-                                <div className="h-1.5 rounded-full w-full" style={{ background: "#EAE2D6" }}>
-                                  <div className="h-1.5 rounded-full w-1/2" style={{ background: "#925F0A" }} />
-                                </div>
-                                <span className="text-xs" style={{ color: "#925F0A" }}>Moderate</span>
-                              </div>
+                            {sensitivities.filter(s => MEDICAL_CONDITIONS.includes(s)).map((s) => (
+                              <span key={s} className="px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: "#FEF6E4", color: "#925F0A", border: "1px solid #F5DFA0" }}>{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {sensitivities.filter(s => DIETARY_NEEDS.includes(s)).length > 0 && (
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#A89080" }}>Dietary Needs</p>
+                          <div className="flex flex-wrap gap-2">
+                            {sensitivities.filter(s => DIETARY_NEEDS.includes(s)).map((s) => (
+                              <span key={s} className="px-3 py-1.5 rounded-full text-sm font-medium" style={{ background: "#F5EFE6", color: "#3D2C1E", border: "1px solid #EAE2D6" }}>{s}</span>
                             ))}
                           </div>
                         </div>
