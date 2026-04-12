@@ -333,7 +333,11 @@ export async function runChat(
         case "format_response": {
           const a = args as { reply: string; validation_result?: ValidationResult | null };
           finalReply = a.reply;
-          if (a.validation_result !== undefined) finalValidation = a.validation_result ?? null;
+          // Don't overwrite finalValidation — it was already set by validate_brand
+          // with full Tavily data (factors, sources, etc.) that Gemini can't reconstruct
+          if (finalValidation === null && a.validation_result !== undefined) {
+            finalValidation = a.validation_result ?? null;
+          }
           responseData = { ok: true };
           shouldBreak = true;
           break;
