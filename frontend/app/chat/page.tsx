@@ -10,6 +10,13 @@ interface ChatMessage {
   content: string;
 }
 
+interface ValidationFactor {
+  category: string;
+  status: "pass" | "warn" | "fail";
+  findings: string[];
+  summary: string;
+}
+
 interface ValidationResult {
   brand_name: string;
   product_name: string;
@@ -18,6 +25,7 @@ interface ValidationResult {
   certifications: string[];
   red_flags: string[];
   reviews_summary: string;
+  factors: ValidationFactor[];
   stub?: boolean;
 }
 
@@ -36,48 +44,91 @@ interface DisplayMessage {
 }
 
 // ── Validation card ─────────────────────────────────────────────────────────
+const STATUS_STYLES = {
+  pass: { icon: <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />, label: "text-green-400", bg: "bg-green-500/10 border-green-500/20" },
+  warn: { icon: <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />, label: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
+  fail: { icon: <ShieldAlert className="w-3.5 h-3.5 text-red-400 shrink-0" />, label: "text-red-400", bg: "bg-red-500/10 border-red-500/20" },
+};
+
 function ValidationCard({ v }: { v: ValidationResult }) {
   const isPending = v.verdict === "PENDING_VALIDATION";
+  const verdictColor = isPending
+    ? "text-amber-400 border-amber-400/30 bg-amber-400/10"
+    : v.verdict === "SAFE"
+    ? "text-green-400 border-green-400/30 bg-green-400/10"
+    : v.verdict === "CAUTION"
+    ? "text-amber-400 border-amber-400/30 bg-amber-400/10"
+    : "text-red-400 border-red-400/30 bg-red-400/10";
+
   return (
-    <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-3 text-sm">
+    <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col gap-4 text-sm">
+      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 font-semibold text-white">
           <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
           <span>{v.brand_name}{v.product_name ? ` · ${v.product_name}` : ""}</span>
         </div>
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
-          isPending
-            ? "text-amber-400 border-amber-400/30 bg-amber-400/10"
-            : v.verdict === "SAFE"
-            ? "text-green-400 border-green-400/30 bg-green-400/10"
-            : "text-red-400 border-red-400/30 bg-red-400/10"
-        }`}>
-          {v.verdict.replace("_", " ")}
-        </span>
+        <div className="flex items-center gap-2">
+          {v.trust_score !== null && (
+            <span className="text-xs text-white/40 font-mono">
+              {v.trust_score}/100
+            </span>
+          )}
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${verdictColor}`}>
+            {v.verdict.replace(/_/g, " ")}
+          </span>
+        </div>
       </div>
 
-      {(v.certifications ?? []).length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {(v.certifications ?? []).map((c) => (
-            <span key={c} className="flex items-center gap-1 text-xs bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-0.5 rounded-full">
-              <CheckCircle2 className="w-3 h-3" />{c}
-            </span>
-          ))}
+      {/* Per-factor breakdown */}
+      {(v.factors ?? []).length > 0 && (
+        <div className="flex flex-col gap-2">
+          {v.factors.map((f) => {
+            const style = STATUS_STYLES[f.status];
+            return (
+              <div key={f.category} className={`rounded-xl border p-3 flex flex-col gap-1.5 ${style.bg}`}>
+                <div className={`flex items-center gap-1.5 text-xs font-semibold ${style.label}`}>
+                  {style.icon}
+                  {f.category}
+                </div>
+                <ul className="flex flex-col gap-0.5 pl-5">
+                  {f.findings.map((item) => (
+                    <li key={item} className="text-xs text-white/60 list-disc">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {(v.red_flags ?? []).length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {(v.red_flags ?? []).map((f) => (
-            <span key={f} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 px-2 py-0.5 rounded-full">
-              <AlertTriangle className="w-3 h-3" />{f}
-            </span>
-          ))}
-        </div>
+      {/* Fallback chips if no factors (legacy / stub) */}
+      {(v.factors ?? []).length === 0 && (
+        <>
+          {(v.certifications ?? []).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {(v.certifications ?? []).map((c) => (
+                <span key={c} className="flex items-center gap-1 text-xs bg-green-500/10 text-green-300 border border-green-500/20 px-2 py-0.5 rounded-full">
+                  <CheckCircle2 className="w-3 h-3" />{c}
+                </span>
+              ))}
+            </div>
+          )}
+          {(v.red_flags ?? []).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {(v.red_flags ?? []).map((f) => (
+                <span key={f} className="flex items-center gap-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 px-2 py-0.5 rounded-full">
+                  <AlertTriangle className="w-3 h-3" />{f}
+                </span>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
-      <p className="text-white/50 text-xs leading-relaxed">{v.reviews_summary}</p>
-      {v.stub && <p className="text-white/20 text-xs italic">Validation stub — Tavily lookup coming soon</p>}
+      {/* Summary */}
+      <p className="text-white/40 text-xs leading-relaxed border-t border-white/5 pt-3">{v.reviews_summary}</p>
+      {v.stub && <p className="text-white/20 text-xs italic">Validation pending</p>}
     </div>
   );
 }

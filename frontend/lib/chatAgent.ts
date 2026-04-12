@@ -204,6 +204,13 @@ const tools: FunctionDeclaration[] = [
 // Types
 // ---------------------------------------------------------------------------
 
+export interface ValidationFactor {
+  category: string;           // e.g. "Food & Product Safety"
+  status: "pass" | "warn" | "fail";
+  findings: string[];         // bullet points shown to user
+  summary: string;            // 1-2 sentence context
+}
+
 export interface ValidationResult {
   brand_name: string;
   product_name: string;
@@ -212,6 +219,7 @@ export interface ValidationResult {
   certifications: string[];
   red_flags: string[];
   reviews_summary: string;
+  factors: ValidationFactor[];
   sources: unknown[];
   stub?: boolean;
 }
