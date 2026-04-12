@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Shield, Send, ImagePlus, X, Loader2, ShieldAlert, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import Navbar from "@/components/Navbar";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -187,8 +188,10 @@ export default function ChatPage() {
   // ── Landing view ──────────────────────────────────────────────────────────
   if (!started) {
     return (
+      <div className="min-h-screen bg-black flex flex-col">
+        <Navbar />
       <main
-        className="min-h-screen bg-black flex flex-col items-center justify-center px-4"
+        className="flex-1 flex flex-col items-center justify-center px-4"
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
@@ -302,14 +305,16 @@ export default function ChatPage() {
           </div>
         </div>
       </main>
+      </div>
     );
   }
 
   // ── Chat view ─────────────────────────────────────────────────────────────
   return (
     <main className="min-h-screen bg-black flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-5 py-4 border-b border-white/5">
+      <Navbar />
+      {/* Sub-header */}
+      <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
         <Shield className="w-4 h-4 text-amber-400" />
         <span className="text-white font-semibold text-sm">Guardia</span>
         <span className="text-white/30 text-sm">— Product Safety</span>

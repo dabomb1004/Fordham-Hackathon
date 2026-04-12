@@ -130,7 +130,7 @@ export default function HomePage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder='Try "Advil", "Lay\'s", "Kirkland Fish Oil"...'
+                placeholder='Try "Advil", "Lays", "Kirkland Fish Oil"...'
                 className="flex-1 bg-transparent text-sm focus:outline-none"
                 style={{ color: "#3D2C1E" }}
               />
