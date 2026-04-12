@@ -3,10 +3,9 @@ uvicorn
 python-dotenv
 tavily-python
 anthropic
-sentence-transformers
 python-whois
 tldextract
-docling
 Pillow
 python-multipart
 requests
+numpy
