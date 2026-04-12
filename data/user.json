@@ -1,26 +1,29 @@
 {
   "id": "demo_user",
-  "name": "Alex Johnson",
-  "height": "5'11\"",
-  "weight": "175 lbs",
-  "age": 34,
-  "blood_type": "O+",
-  "medical_history": [
-    "Type 2 Diabetes (diagnosed 2021)",
-    "Hypertension",
-    "Seasonal allergies"
-  ],
-  "current_medications": [
-    "Metformin 500mg",
-    "Lisinopril 10mg"
-  ],
-  "insurance": {
-    "provider": "BlueCross BlueShield",
-    "plan": "PPO Gold",
-    "member_id": "BCB-4921-JX",
-    "group_number": "GRP-00234",
-    "copay": "$20",
-    "deductible": "$1,500"
+  "profile": {
+    "name": "Alex Johnson",
+    "age": 28,
+    "height": "5'9\"",
+    "weight": "165 lbs",
+    "bmi": 24.4
   },
-  "onboarded": true
+  "food_safety": {
+    "allergies": ["Nuts", "Shellfish"],
+    "dietary_type": ["None"],
+    "sensitivities": ["Lactose Intolerance", "Low Sodium"]
+  },
+  "preferences": {
+    "favorite_cuisines": ["Japanese", "Italian", "Thai"],
+    "spice_level": "Medium",
+    "price_range": "$$",
+    "eating_goal": "healthy"
+  },
+  "priority": {
+    "decision_factor": "health"
+  },
+  "onboarding": {
+    "completed": true,
+    "completed_at": "2026-04-12T10:30:00Z",
+    "steps_completed": [1, 2, 3, 4]
+  }
 }
