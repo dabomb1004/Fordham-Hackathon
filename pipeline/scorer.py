@@ -4,20 +4,9 @@ from datetime import datetime, timezone
 import tldextract
 import whois
 import anthropic
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 
-_embedding_model = None
 _anthropic_client = None
-
-
-def _get_embedding_model():
-    global _embedding_model
-    if _embedding_model is None:
-        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-    return _embedding_model
 
 
 def _get_anthropic_client():
@@ -69,21 +58,29 @@ def score_domain(url: str) -> float:
         return 0.40
 
 
+def _jaccard_similarity(text_a: str, text_b: str) -> float:
+    """Lightweight keyword overlap similarity (no ML dependencies)."""
+    words_a = set(text_a.lower().split())
+    words_b = set(text_b.lower().split())
+    if not words_a or not words_b:
+        return 0.0
+    return len(words_a & words_b) / len(words_a | words_b)
+
+
 def detect_burst(sources: list[dict]) -> float:
     """Detect coordinated content burst — many similar articles published at once."""
-    if len(sources) < 3:
-        return 0.0
-
-    model = _get_embedding_model()
     contents = [s["content"] for s in sources if s.get("content")]
-
     if len(contents) < 3:
         return 0.0
 
-    embeddings = model.encode(contents)
-    sim_matrix = cosine_similarity(embeddings)
-    np.fill_diagonal(sim_matrix, 0)
-    avg_similarity = sim_matrix.mean()
+    # Compute average pairwise Jaccard similarity
+    pairs = 0
+    total_sim = 0.0
+    for i in range(len(contents)):
+        for j in range(i + 1, len(contents)):
+            total_sim += _jaccard_similarity(contents[i], contents[j])
+            pairs += 1
+    avg_similarity = total_sim / pairs if pairs else 0.0
 
     # Check temporal clustering
     dates = []
