@@ -27,40 +27,19 @@ export interface PersonalProfile {
 
 // ─── Food Safety ─────────────────────────────────────────────────────────────
 
-export type AllergyOption =
-  | "None"
-  | "Nuts"
-  | "Dairy"
-  | "Gluten"
-  | "Seafood"
-  | "Shellfish"
-  | "Soy"
-  | "Eggs"
-  | "Wheat";
-
-export type DietaryType =
-  | "None"
-  | "Vegan"
-  | "Vegetarian"
-  | "Halal"
-  | "Kosher"
-  | "Paleo"
-  | "Keto";
-
-export type Sensitivity =
-  | "Lactose Intolerance"
-  | "Low Sodium"
-  | "Low Sugar"
-  | "Low Fat"
-  | "Gluten Sensitivity";
+export type AllergyOption = string;
+export type DietaryType = string;
+export type Sensitivity = string;
 
 export interface FoodSafety {
   /** Multi-select — ["None"] means no known allergies */
-  allergies: AllergyOption[];
+  allergies: string[];
   /** Single-select dietary identity (array for extensibility) */
-  dietary_type: DietaryType[];
+  dietary_type: string[];
   /** Multi-select intolerances / medical dietary needs */
-  sensitivities: Sensitivity[];
+  sensitivities: string[];
+  medical_conditions?: string[];
+  dietary_needs?: string[];
 }
 
 // ─── Food Preferences ────────────────────────────────────────────────────────
