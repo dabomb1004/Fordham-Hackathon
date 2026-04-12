@@ -5,7 +5,15 @@
       "Bash(start:*)",
       "Bash(cmd /c \"netstat -ano | findstr :3000\")",
       "Bash(cmd:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "mcp__claude_ai_Supabase__get_project_url",
+      "mcp__claude_ai_Supabase__get_publishable_keys",
+      "Bash(npm install:*)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(curl -s http://localhost:3000/api/backend/user)",
+      "Bash(python3 -m json.tool)",
+      "Read(//tmp/**)"
     ]
   }
 }
