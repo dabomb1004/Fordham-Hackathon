@@ -7,6 +7,7 @@ import {
   FunctionResponsePart,
 } from "@google/generative-ai";
 import { getUser, saveUserMemory } from "./storage";
+import { validateBrand } from "./brandValidator";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -198,26 +199,6 @@ const tools: FunctionDeclaration[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Stub — teammate replaces with real Tavily + scoring pipeline
-// ---------------------------------------------------------------------------
-async function stubValidateBrand(
-  brandName: string,
-  productName = "",
-  _productCategory = ""
-): Promise<ValidationResult> {
-  return {
-    brand_name: brandName,
-    product_name: productName,
-    trust_score: null,
-    verdict: "PENDING_VALIDATION",
-    certifications: [],
-    red_flags: [],
-    reviews_summary: "Brand validation in progress — teammate is wiring Tavily here.",
-    sources: [],
-    stub: true,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -335,7 +316,7 @@ export async function runChat(
         }
         case "validate_brand": {
           const a = args as { brand_name: string; product_name?: string; product_category?: string; ingredients_of_concern?: string[] };
-          const result = await stubValidateBrand(a.brand_name, a.product_name, a.product_category);
+          const result = await validateBrand(a.brand_name, a.product_name, a.product_category, a.ingredients_of_concern);
           finalValidation = result;
           responseData = result;
           break;
