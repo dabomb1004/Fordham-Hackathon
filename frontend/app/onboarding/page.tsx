@@ -121,7 +121,7 @@ const DEFAULT_PROFILE: UserProfile = {
   profile: { name: "", age: 0, height: "", weight: "", bmi: null },
   food_safety: { allergies: [], dietary_type: ["None"], sensitivities: [] },
   preferences: { favorite_cuisines: [], spice_level: "Medium", price_range: "$$", eating_goal: "" },
-  priority: { decision_factor: "" },
+  priority: { decision_factor: [] as string[] },
   onboarding: { completed: false, completed_at: null, steps_completed: [] },
 };
 
@@ -624,19 +624,26 @@ export default function Onboarding() {
               Guardia will lead with what you care about most.
             </p>
 
+            <p className="text-xs mb-3" style={{ color: "#A89080" }}>Select all that apply</p>
             <div className="flex flex-col gap-2">
               {DECISION_FACTORS.map(({ value, label, emoji, desc }) => {
-                const on = data.priority.decision_factor === value;
+                const factors = Array.isArray(data.priority.decision_factor)
+                  ? data.priority.decision_factor
+                  : data.priority.decision_factor ? [data.priority.decision_factor] : [];
+                const on = factors.includes(value);
                 return (
                   <button
                     key={value}
                     onClick={() =>
-                      setData((d) => ({
-                        ...d,
-                        priority: {
-                          decision_factor: value as UserProfile["priority"]["decision_factor"],
-                        },
-                      }))
+                      setData((d) => {
+                        const arr = Array.isArray(d.priority.decision_factor)
+                          ? d.priority.decision_factor
+                          : d.priority.decision_factor ? [d.priority.decision_factor] : [];
+                        const next = arr.includes(value)
+                          ? arr.filter((x) => x !== value)
+                          : [...arr, value];
+                        return { ...d, priority: { decision_factor: next } };
+                      })
                     }
                     className="flex items-center gap-4 p-4 rounded-xl text-left transition-all"
                     style={{
@@ -650,7 +657,7 @@ export default function Onboarding() {
                       <div className="text-xs mt-0.5" style={{ color: "#8C7466" }}>{desc}</div>
                     </div>
                     <div
-                      className="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all"
+                      className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center transition-all"
                       style={{
                         background: on ? "#C17B3A" : "transparent",
                         border: `2px solid ${on ? "#C17B3A" : "#B5A497"}`,
@@ -667,7 +674,7 @@ export default function Onboarding() {
               <BackButton onClick={() => setStep(3)} />
               <button
                 onClick={handleSave}
-                disabled={saving || !data.priority.decision_factor}
+                disabled={saving || !(Array.isArray(data.priority.decision_factor) ? data.priority.decision_factor.length > 0 : !!data.priority.decision_factor)}
                 className="flex-1 flex items-center justify-center gap-2 font-semibold rounded-xl py-2.5 text-sm transition-all disabled:opacity-40"
                 style={{ background: "#C17B3A", color: "white" }}
               >
