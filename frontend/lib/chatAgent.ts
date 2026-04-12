@@ -86,26 +86,67 @@ When the user reveals health info during conversation (e.g. "I'm lactose intoler
 function buildSystemWithProfile(profile: Record<string, unknown>): string {
   const parts: string[] = [];
 
+  // Personal info (spread from Supabase profile column into root by storage.ts)
   if (profile.name) parts.push(`Name: ${profile.name}`);
   if (profile.age) parts.push(`Age: ${profile.age}`);
+  if (profile.height) parts.push(`Height: ${profile.height}`);
+  if (profile.weight) parts.push(`Weight: ${profile.weight}`);
   if (profile.blood_type) parts.push(`Blood type: ${profile.blood_type}`);
 
-  const history = profile.medical_history;
-  if (Array.isArray(history) && history.length > 0)
-    parts.push(`Medical history / conditions: ${history.join(", ")}`);
+  // Food safety (Supabase food_safety column)
+  const fs = profile.food_safety as Record<string, unknown> | undefined;
+  if (fs) {
+    const allergies = fs.allergies as string[] | undefined;
+    if (Array.isArray(allergies) && allergies.length > 0 && !allergies.includes("None"))
+      parts.push(`Known allergies: ${allergies.join(", ")}`);
 
-  const meds = profile.current_medications;
-  if (Array.isArray(meds) && meds.length > 0)
-    parts.push(`Current medications: ${meds.join(", ")}`);
+    const dietaryType = fs.dietary_type as string[] | string | undefined;
+    const dtArr = Array.isArray(dietaryType) ? dietaryType : dietaryType ? [dietaryType] : [];
+    if (dtArr.length > 0 && !dtArr.includes("None"))
+      parts.push(`Dietary type: ${dtArr.join(", ")}`);
 
-  // Ad-hoc memory keys the agent saved in prior turns
+    const medConditions = fs.medical_conditions as string[] | undefined;
+    if (Array.isArray(medConditions) && medConditions.length > 0)
+      parts.push(`Medical conditions: ${medConditions.join(", ")}`);
+
+    const dietaryNeeds = fs.dietary_needs as string[] | undefined;
+    if (Array.isArray(dietaryNeeds) && dietaryNeeds.length > 0)
+      parts.push(`Dietary needs: ${dietaryNeeds.join(", ")}`);
+
+    const sensitivities = fs.sensitivities as string[] | undefined;
+    if (Array.isArray(sensitivities) && sensitivities.length > 0)
+      parts.push(`Sensitivities: ${sensitivities.join(", ")}`);
+  }
+
+  // Preferences (Supabase preferences column)
+  const prefs = profile.preferences as Record<string, unknown> | undefined;
+  if (prefs) {
+    const cuisines = prefs.favorite_cuisines as string[] | undefined;
+    if (Array.isArray(cuisines) && cuisines.length > 0)
+      parts.push(`Favorite cuisines: ${cuisines.join(", ")}`);
+    if (prefs.spice_level) parts.push(`Spice preference: ${prefs.spice_level}`);
+    if (prefs.price_range) parts.push(`Budget: ${prefs.price_range}`);
+    if (prefs.eating_goal) parts.push(`Eating goal: ${prefs.eating_goal}`);
+  }
+
+  // Priority (Supabase priority column)
+  const priority = profile.priority as Record<string, unknown> | undefined;
+  if (priority) {
+    const df = priority.decision_factor as string[] | string | undefined;
+    const dfArr = Array.isArray(df) ? df : df ? [df] : [];
+    if (dfArr.length > 0)
+      parts.push(`Verification priorities: ${dfArr.join(", ")}`);
+  }
+
+  // Legacy / ad-hoc memory keys saved mid-conversation by save_user_memory
   const knownKeys = new Set([
-    "id", "name", "age", "height", "weight", "blood_type",
+    "id", "name", "age", "height", "weight", "bmi", "blood_type",
     "medical_history", "current_medications", "insurance", "onboarded",
+    "profile", "food_safety", "preferences", "priority", "onboarding",
   ]);
   for (const [k, v] of Object.entries(profile)) {
-    if (!knownKeys.has(k) && v !== undefined && v !== null)
-      parts.push(`${k}: ${Array.isArray(v) ? v.join(", ") : v}`);
+    if (!knownKeys.has(k) && v !== undefined && v !== null && v !== "")
+      parts.push(`${k}: ${Array.isArray(v) ? v.join(", ") : String(v)}`);
   }
 
   if (parts.length === 0) return BASE_SYSTEM_PROMPT;
