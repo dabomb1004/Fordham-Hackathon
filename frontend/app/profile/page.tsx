@@ -296,7 +296,6 @@ export default function ProfilePage() {
                             </Chip>
                             );
                           })}
-                          ))}
                         </div>
                       </div>
                     </div>
