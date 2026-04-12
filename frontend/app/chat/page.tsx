@@ -84,8 +84,10 @@ function ValidationCard({ v }: { v: ValidationResult }) {
 
 // ── Quick action chips ───────────────────────────────────────────────────────
 const CHIPS = [
-  "Check for allergens",
+  "Is this brand legit?",
+  "Any recalls or warnings?",
   "Is this FDA approved?",
+  "Check labor practices",
   "Any harmful ingredients?",
   "Verify certifications",
 ];
@@ -205,10 +207,10 @@ export default function ChatPage() {
         {/* Heading */}
         <div className="text-center mb-8">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-3 tracking-tight">
-            Is this product safe?
+            Verify anything.
           </h1>
           <p className="text-white/40 text-base max-w-sm mx-auto">
-            Drop a product photo or ask a question — I'll check ingredients, certifications, and flag anything that conflicts with your health profile.
+            Drop a photo or ask about any product or brand — food, clothing, medication, supplements. I cross-reference credible sources and flag what matters.
           </p>
         </div>
 
