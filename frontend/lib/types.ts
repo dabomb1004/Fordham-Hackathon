@@ -1,164 +1,116 @@
-// ─── User Profile — JSON Data Structure ─────────────────────────────────────
-//
-// This schema is stored in data/user.json and exchanged with the FastAPI
-// backend via GET/PUT /api/backend/user.
-//
-// Top-level sections:
-//   profile       — who the user is (personal info + BMI)
-//   food_safety   — allergies, dietary type, sensitivities
-//   preferences   — cuisine tastes, spice, budget, eating goal
-//   priority      — what the AI should optimize for
-//   onboarding    — completion metadata
+export type UserProfile = {
+  fullName?: string;
+  age?: number;
+  heightCm?: number;
+  weightKg?: number;
+  allergies: string[];
+  dietaryType?: string;
+  sensitivities: string[];
+  medicationAllergies?: string[];
+  chronicConditions?: string[];
+  currentMedications?: string[];
+  insuranceProvider?: string;
+  insuranceMemberId?: string;
+};
 
-// ─── Personal Profile ────────────────────────────────────────────────────────
+export type AnalysisResult = {
+  item_type: "food" | "medicine" | "unknown";
+  identified_item_name: string;
+  matched_brand_or_restaurant: string;
+  location_context: string;
+  summary: string;
+  ingredients: Array<{
+    name: string;
+    kind?: "active" | "inactive" | "dish" | "sauce" | "unknown";
+    source: string;
+    certainty: "high" | "medium" | "low";
+  }>;
+  preparation_or_usage: string;
+  official_status: {
+    approvals: Array<{ label: string; year?: string; source: string }>;
+    certifications: Array<{ label: string; year?: string; expiry?: string; source: string }>;
+    recalls: Array<{ title: string; date?: string; source: string }>;
+    bans_or_restrictions: Array<{ country: string; reason: string; source: string }>;
+  };
+  allergy_risk_assessment: Array<{
+    allergen: string;
+    risk_percent: number;
+    risk_level: "low" | "medium" | "high" | "unknown";
+    why: string;
+    evidence: string[];
+  }>;
+  profile_matches: Array<{
+    profile_field: string;
+    matched_value: string;
+    impact: string;
+  }>;
+  warnings: string[];
+  missing_or_uncertain_data: string[];
+  sources: Array<{
+    title: string;
+    url: string;
+    source_type: "official" | "menu" | "review" | "medical" | "news" | "directory";
+  }>;
+  safe_follow_up_suggestions: string[];
+};
 
-export interface PersonalProfile {
-  /** Display name */
-  name: string;
-  /** Age in years */
-  age: number;
-  /** Free-text height, e.g. "5'9\"" or "175 cm" */
-  height: string;
-  /** Free-text weight, e.g. "165 lbs" or "75 kg" */
-  weight: string;
-  /** Body Mass Index — auto-calculated from height + weight; null until both are set */
-  bmi: number | null;
-}
+export type RouterOutput = {
+  item_type: "food" | "medicine" | "unknown";
+  normalized_item_name: string;
+  brand_or_restaurant: string;
+  location_hint: string;
+  form_factor: string;
+  strength?: string;
+  possible_synonyms: string[];
+  web_search_targets: string[];
+  needs_image_verification: boolean;
+  ambiguities: string[];
+  risk_flags: string[];
+};
 
-// ─── Food Safety ─────────────────────────────────────────────────────────────
+export type RetrievalPlan = {
+  search_intent: string;
+  queries: Array<{
+    query: string;
+    purpose: string;
+    preferred_source_types: string[];
+  }>;
+  priority_domains: string[];
+  pages_to_extract_if_found: string[];
+  site_to_crawl_if_needed: Array<{ url: string; instructions: string }>;
+  site_to_map_if_needed: string[];
+  must_verify: string[];
+  must_not_claim_without_evidence: string[];
+};
 
-export type AllergyOption =
-  | "None"
-  | "Nuts"
-  | "Dairy"
-  | "Gluten"
-  | "Seafood"
-  | "Shellfish"
-  | "Soy"
-  | "Eggs"
-  | "Wheat";
+export type ValidationIssue = {
+  severity: "critical" | "high" | "medium" | "low";
+  field: string;
+  problem: string;
+  fix_instruction: string;
+};
 
-export type DietaryType =
-  | "None"
-  | "Vegan"
-  | "Vegetarian"
-  | "Halal"
-  | "Kosher"
-  | "Paleo"
-  | "Keto";
+export type ValidationResult = {
+  approved: boolean;
+  issues: ValidationIssue[];
+  required_rewrites: string[];
+  missing_disclaimers: string[];
+  claims_to_remove: string[];
+  claims_to_soften: string[];
+  final_safety_notes: string[];
+};
 
-export type Sensitivity =
-  | "Lactose Intolerance"
-  | "Low Sodium"
-  | "Low Sugar"
-  | "Low Fat"
-  | "Gluten Sensitivity";
+export type EvidenceBundle = {
+  search_results: Array<Record<string, unknown>>;
+  top_urls: string[];
+  extracted: Record<string, unknown>;
+  mapped: Array<Record<string, unknown>>;
+  crawled: Array<Record<string, unknown>>;
+};
 
-export interface FoodSafety {
-  /** Multi-select — ["None"] means no known allergies */
-  allergies: AllergyOption[];
-  /** Single-select dietary identity (array for extensibility) */
-  dietary_type: DietaryType[];
-  /** Multi-select intolerances / medical dietary needs */
-  sensitivities: Sensitivity[];
-}
-
-// ─── Food Preferences ────────────────────────────────────────────────────────
-
-export type SpiceLevel = "Mild" | "Medium" | "Hot" | "Extra Hot";
-export type PriceRange = "$" | "$$" | "$$$";
-export type EatingGoal = "healthy" | "comfort" | "high_protein" | "weight_loss" | "";
-
-export interface FoodPreferences {
-  /** Multi-select list of cuisine names, e.g. ["Japanese", "Italian"] */
-  favorite_cuisines: string[];
-  /** How spicy the user likes their food */
-  spice_level: SpiceLevel;
-  /** Budget tier for restaurants / food orders */
-  price_range: PriceRange;
-  /**
-   * Primary eating motivation:
-   *   "healthy"      — balanced nutrition
-   *   "comfort"      — feel-good meals
-   *   "high_protein" — fitness / muscle focus
-   *   "weight_loss"  — calorie-conscious
-   */
-  eating_goal: EatingGoal;
-}
-
-// ─── Decision Priority ───────────────────────────────────────────────────────
-
-/**
- * What the AI agent should weight most heavily when ranking options:
- *   "taste"       — flavour / experience
- *   "health"      — nutrition score
- *   "price"       — cost / value
- *   "convenience" — speed / proximity
- *   "safety"      — allergy / dietary compliance
- */
-export type DecisionFactor =
-  | "taste"
-  | "health"
-  | "price"
-  | "convenience"
-  | "safety"
-  | "";
-
-export interface FoodPriority {
-  decision_factor: DecisionFactor;
-}
-
-// ─── Onboarding Status ───────────────────────────────────────────────────────
-
-export interface OnboardingStatus {
-  /** True once the user has completed all 4 steps */
-  completed: boolean;
-  /** ISO 8601 timestamp of when the profile was first fully saved */
-  completed_at: string | null;
-  /** Which step numbers have been submitted (1–4) */
-  steps_completed: number[];
-}
-
-// ─── Root User Profile ───────────────────────────────────────────────────────
-
-export interface UserProfile {
-  /** Stable identifier — currently always "demo_user" */
-  id: string;
-  profile: PersonalProfile;
-  food_safety: FoodSafety;
-  preferences: FoodPreferences;
-  priority: FoodPriority;
-  onboarding: OnboardingStatus;
-}
-
-// ─── JSON Example (for reference) ───────────────────────────────────────────
-//
-// {
-//   "id": "demo_user",
-//   "profile": {
-//     "name": "Alex Johnson",
-//     "age": 28,
-//     "height": "5'9\"",
-//     "weight": "165 lbs",
-//     "bmi": 24.4
-//   },
-//   "food_safety": {
-//     "allergies": ["Nuts", "Shellfish"],
-//     "dietary_type": ["None"],
-//     "sensitivities": ["Lactose Intolerance", "Low Sodium"]
-//   },
-//   "preferences": {
-//     "favorite_cuisines": ["Japanese", "Italian", "Thai"],
-//     "spice_level": "Medium",
-//     "price_range": "$$",
-//     "eating_goal": "healthy"
-//   },
-//   "priority": {
-//     "decision_factor": "health"
-//   },
-//   "onboarding": {
-//     "completed": true,
-//     "completed_at": "2026-04-12T10:30:00Z",
-//     "steps_completed": [1, 2, 3, 4]
-//   }
-// }
+export type AnalysisTrace = {
+  router_output: RouterOutput;
+  retrieval_plan: RetrievalPlan;
+  evidence: EvidenceBundle;
+  validation: ValidationResult;
+};
