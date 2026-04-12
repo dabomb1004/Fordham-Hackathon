@@ -85,14 +85,16 @@ const DECISION_FACTORS = [
 // ─── BMI Helper ──────────────────────────────────────────────────────────────
 
 function calcBMI(height: string, weight: string): number | null {
-  const ftIn = height.match(/^(\d+)'(\d+)"/);
-  const cm   = height.match(/^(\d+)\s*cm/i);
-  const lbs  = weight.match(/^(\d+(?:\.\d+)?)\s*lbs?/i);
-  const kg   = weight.match(/^(\d+(?:\.\d+)?)\s*kg/i);
+  const ftIn  = height.match(/^(\d+)'(\d+)"/);
+  const ftIn2 = height.match(/^(\d+)\s*ft\s*(\d+)\s*in/i);
+  const cm    = height.match(/^(\d+)\s*cm/i);
+  const lbs   = weight.match(/^(\d+(?:\.\d+)?)\s*lbs?/i);
+  const kg    = weight.match(/^(\d+(?:\.\d+)?)\s*kg/i);
 
   let h = 0, w = 0;
-  if (ftIn) h = (parseInt(ftIn[1]) * 12 + parseInt(ftIn[2])) * 0.0254;
-  else if (cm) h = parseInt(cm[1]) / 100;
+  if (ftIn)       h = (parseInt(ftIn[1])  * 12 + parseInt(ftIn[2]))  * 0.0254;
+  else if (ftIn2) h = (parseInt(ftIn2[1]) * 12 + parseInt(ftIn2[2])) * 0.0254;
+  else if (cm)    h = parseInt(cm[1]) / 100;
   if (lbs) w = parseFloat(lbs[1]) * 0.453592;
   else if (kg) w = parseFloat(kg[1]);
 

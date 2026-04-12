@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, Link, Shield, Loader2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ResultsPanel } from "@/components/ResultsPanel";
 
 type AppState = "input" | "loading" | "results";
 
 export default function Home() {
+  const router = useRouter();
   const [state, setState] = useState<AppState>("input");
   const [url, setUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -15,6 +17,18 @@ export default function Home() {
   const [results, setResults] = useState<any>(null);
   const [loadingStep, setLoadingStep] = useState("Analyzing...");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Redirect to onboarding if not completed
+  useEffect(() => {
+    fetch("/api/backend/user")
+      .then((r) => r.json())
+      .then((u) => {
+        if (!u?.onboarding?.completed) {
+          router.replace("/onboarding");
+        }
+      })
+      .catch(() => {});
+  }, [router]);
 
   const clearImage = () => {
     setImageFile(null);
