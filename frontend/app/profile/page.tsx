@@ -10,7 +10,7 @@ interface UserData {
   profile?: { name?: string; age?: number; height?: string; weight?: string; bmi?: number };
   food_safety?: { allergies?: string[]; dietary_type?: string[]; sensitivities?: string[] };
   preferences?: { favorite_cuisines?: string[]; spice_level?: string; price_range?: string; eating_goal?: string };
-  priority?: { decision_factor?: string };
+  priority?: { decision_factor?: string | string[] };
   onboarding?: { completed?: boolean; completed_at?: string | null; steps_completed?: number[] };
 }
 
@@ -280,10 +280,22 @@ export default function ProfilePage() {
                       <div>
                         <p className="text-xs mb-1.5" style={{ color: "#6B5744" }}>Priority</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {DECISION_FACTORS.map((f) => (
-                            <Chip key={f} selected={draft.priority?.decision_factor === f} onClick={() => setDraft((d) => ({ ...d, priority: { decision_factor: f } }))}>
+                          {DECISION_FACTORS.map((f) => {
+                            const factors = Array.isArray(draft.priority?.decision_factor)
+                              ? draft.priority!.decision_factor as string[]
+                              : draft.priority?.decision_factor ? [draft.priority.decision_factor as string] : [];
+                            return (
+                            <Chip key={f} selected={factors.includes(f)} onClick={() => setDraft((d) => {
+                              const arr = Array.isArray(d.priority?.decision_factor)
+                                ? d.priority!.decision_factor as string[]
+                                : d.priority?.decision_factor ? [d.priority.decision_factor as string] : [];
+                              const next = arr.includes(f) ? arr.filter((x) => x !== f) : [...arr, f];
+                              return { ...d, priority: { decision_factor: next } };
+                            })}>
                               {f}
                             </Chip>
+                            );
+                          })}
                           ))}
                         </div>
                       </div>
@@ -294,7 +306,7 @@ export default function ProfilePage() {
                         { label: "Spice",    value: src.preferences?.spice_level },
                         { label: "Budget",   value: src.preferences?.price_range },
                         { label: "Goal",     value: src.preferences?.eating_goal?.replace("_", " ") },
-                        { label: "Priority", value: src.priority?.decision_factor },
+                        { label: "Priority", value: Array.isArray(src.priority?.decision_factor) ? (src.priority!.decision_factor as string[]).join(", ") : src.priority?.decision_factor as string | undefined },
                       ].map(({ label, value }) => (
                         <div key={label} className="flex justify-between">
                           <span style={{ color: "#6B5744" }}>{label}</span>
