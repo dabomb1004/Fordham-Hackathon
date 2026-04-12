@@ -213,7 +213,7 @@ export default function Onboarding() {
       });
       if (!res.ok) throw new Error();
       toast.success("Profile saved! Let's find great food.");
-      router.push("/chat");
+      router.push("/home");
     } catch {
       toast.error("Failed to save. Is the backend running?");
     } finally {

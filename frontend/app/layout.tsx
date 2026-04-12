@@ -6,8 +6,8 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TruthLens — AI Content Validator",
-  description: "Validate any link or screenshot against trusted sources instantly.",
+  title: "Guardia — Product Safety Verification",
+  description: "Verify any food product, medication, or supplement against your personal health profile.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
