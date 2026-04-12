@@ -264,7 +264,7 @@ export async function runChat(
 
       switch (name) {
         case "get_user_profile": {
-          responseData = getUser();
+          responseData = await getUser();
           break;
         }
         case "ask_user_question": {
@@ -274,7 +274,7 @@ export async function runChat(
         }
         case "save_user_memory": {
           const a = args as { key: string; value: string };
-          saveUserMemory(a.key, a.value);
+          await saveUserMemory(a.key, a.value);
           responseData = { saved: true, key: a.key };
           break;
         }

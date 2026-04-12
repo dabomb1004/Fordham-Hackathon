@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const userProfile = getUser();
+    const userProfile = await getUser();
     const result = await runChat(message, history, userProfile, imageBase64, imageMediaType);
 
     return NextResponse.json(result);
