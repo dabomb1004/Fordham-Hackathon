@@ -389,6 +389,17 @@ export default function ChatPage() {
                 </button>
               ))}
             </div>
+
+            {/* Powered by Tavily */}
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <span className="text-xs" style={{ color: "#b0a090" }}>Powered by</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://www.tavily.com/logos/tavily-full.svg"
+                alt="Tavily"
+                className="h-4 opacity-50"
+              />
+            </div>
           </div>
         </main>
       </div>
