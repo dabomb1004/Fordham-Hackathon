@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(start:*)",
+      "Bash(cmd /c \"netstat -ano | findstr :3000\")",
+      "Bash(cmd:*)",
+      "Bash(powershell:*)"
+    ]
+  }
+}
